@@ -19,7 +19,7 @@ side="BOTH"
 # Required dependency: NeoForge
 [[dependencies.${mod_id}]]
 modId="neoforge"
-mandatory=true
-versionRange="[${neo_version},)"
+type="required"
+versionRange="[21.1.200,21.1.300)"
 ordering="NONE"
 side="BOTH"

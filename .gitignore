@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ### Gradle ###
 .gradle
 build/
@@ -34,12 +33,16 @@ bin/
 .DS_Store
 
 ### Minecraft Modding ###
-run/
+# removed: run/
 !**/src/**/run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
-=======
+runs/
+!**/src/**/runs/
+buildSrc/
+!**/src/**/buildSrc/
+
 # Compiled class file
 *.class
 
@@ -64,4 +67,5 @@ repo/
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
->>>>>>> 89792c1d88b058bccfdb7aabacc6bea2603f1cde
+
+# this is a neoforge modding env

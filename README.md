@@ -16,7 +16,11 @@ example 0.0.1.0
 NOTE: Overhaul ends support for all previos mods if not explicitly written otherwise
 ## Usage
 ### Maven Repo
-https://api.modrinth.com/maven
+```gradle
+repositories {
+  https://api.modrinth.com/maven
+}
+```
 ### Dependency gradle(groovy)
 ```gradle
 dependencies {

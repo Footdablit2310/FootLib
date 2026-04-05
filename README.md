@@ -11,9 +11,8 @@ It provides shared systems such as:
 - Service injection for mod interoperability
 ### Versioning
 Overhaul.Major.Semi-major.Patch/Hotfix/Minor-alpha(if alpha)/beta(if beta)/blank(if release)
-example 0.0.1.1
+example 0.0.1.0
 1 Semi-major version
-1 Beta-to-Realese-convert
 NOTE: Overhaul ends support for all previos mods if not explicitly written otherwise
 ## Usage
 ### Maven Repo

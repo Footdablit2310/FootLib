@@ -1,5 +1,6 @@
 package com.footdablit2310.footlib.api.common;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.energy.EnergyStorage;
@@ -36,15 +37,15 @@ public final class NbtUtil {
     }
 
     // -------------------------------------------------------------------------
-    // ItemStackHandler
+    // ItemStackHandler (NeoForge 1.21.1)
     // -------------------------------------------------------------------------
-    public static void putItemHandler(CompoundTag tag, String key, ItemStackHandler handler) {
-        tag.put(key, handler.serializeNBT());
+    public static void putItemHandler(CompoundTag tag, String key, ItemStackHandler handler, HolderLookup.Provider provider) {
+        tag.put(key, handler.serializeNBT(provider));
     }
 
-    public static void getItemHandler(CompoundTag tag, String key, ItemStackHandler handler) {
+    public static void getItemHandler(CompoundTag tag, String key, ItemStackHandler handler, HolderLookup.Provider provider) {
         if (tag.contains(key)) {
-            handler.deserializeNBT(tag.getCompound(key));
+            handler.deserializeNBT(provider, tag.getCompound(key));
         }
     }
 

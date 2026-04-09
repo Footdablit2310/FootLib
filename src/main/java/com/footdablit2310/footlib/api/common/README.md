@@ -30,7 +30,9 @@ Convenience methods for interacting with NBT tags.
 Prevents crashes from missing keys and keeps serialization code clean.
 ### ➗ MathUtil
 Small math helpers (clamp, lerp, etc.) used across multiple systems.
-
+### 🧩 RecipeJsonBuilder
+Utilities for constructing recipe JSON objects in a type-safe manner.
+Without this you may have to manually build JSON with error-prone string keys and with your boilerplate code (which can break a **LOT**).
 ## 🧠 Design Principles
 ### 1. Stability First
 These utilities must remain stable across versions.
@@ -41,9 +43,9 @@ The common package does not depend on:
 - CRN
 - Any gameplay system
 This ensures FootLib remains usable even when other modules are delayed or unavailable.
-### 3. Minimalism
-Only essential utilities are included.
-This keeps the package lightweight and easy to understand.
+### 3. Minimalism for now...
+Only essential utilities are included for now...
+This keeps the package lightweight for now... ...and easy to understand.
 ### 4. Consistency Across Mods
 All FootDablit mods should use the same:
 - logging style

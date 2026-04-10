@@ -17,4 +17,7 @@ public final class ModPresence {
     public static boolean isCreateTrainFaresInstalled() {
         return isInstalled("create_train_fares");
     }
+    public static boolean isFootOrganicProcessingInstalled() {
+        return isInstalled("footorganicprocessing");
+    }
 }

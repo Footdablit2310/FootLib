@@ -52,6 +52,6 @@ side="BOTH"
 [[dependencies.${mod_id}]]
 modId="jei"
 type="optional"
-versionRange="[19.27.0,)"
+versionRange="[19.27.0.300,)"
 ordering="NONE"
 side="BOTH"

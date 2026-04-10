@@ -6,18 +6,14 @@ public final class ModPresence {
 
     private ModPresence() {}
 
+    /**
+     * Universal mod presence checker.
+     * Usage:
+     *   ModPresence.isInstalled("create")
+     *   ModPresence.isInstalled("jei")
+     *   ModPresence.isInstalled("footorganicprocessing")
+     */
     public static boolean isInstalled(String modId) {
         return ModList.get().isLoaded(modId);
-    }
-
-    public static boolean isFootEconomyInstalled() {
-        return isInstalled("foot_economy");
-    }
-
-    public static boolean isCreateTrainFaresInstalled() {
-        return isInstalled("create_train_fares");
-    }
-    public static boolean isFootOrganicProcessingInstalled() {
-        return isInstalled("footorganicprocessing");
     }
 }

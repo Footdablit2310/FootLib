@@ -2,6 +2,7 @@ package com.footdablit2310.footlib.api.integration.create;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.footdablit2310.footlib.api.common.ItemJsonUtil;
 import com.footdablit2310.footlib.api.common.RecipeJsonBuilderUtil;
 
 public class CreateMechanicalCraftingJsonUtil extends RecipeJsonBuilderUtil {
@@ -23,10 +24,14 @@ public class CreateMechanicalCraftingJsonUtil extends RecipeJsonBuilderUtil {
         return this;
     }
 
-    public CreateMechanicalCraftingJsonUtil define(char symbol, String itemId) {
-        JsonObject ingredient = new JsonObject();
-        ingredient.addProperty("item", itemId);
-        key.add(String.valueOf(symbol), ingredient);
+    public CreateMechanicalCraftingJsonUtil defineItem(char symbol, String itemId, int count) {
+        key.add(String.valueOf(symbol), ItemJsonUtil.item(itemId, count));
+        root.add("key", key);
+        return this;
+    }
+
+    public CreateMechanicalCraftingJsonUtil defineTag(char symbol, String tagId, int count) {
+        key.add(String.valueOf(symbol), ItemJsonUtil.itemTag(tagId, count));
         root.add("key", key);
         return this;
     }

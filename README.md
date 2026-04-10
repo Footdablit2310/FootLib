@@ -28,7 +28,7 @@ dependencies {
 }
 ```
 ### neoforge.mods.toml
-Add FootLib as a dependency in your mod's `mods.toml`:
+Add FootLib as a dependency in your mod's `neoforge.mods.toml`:
 
 ```toml
 [[dependencies.yourmod]]

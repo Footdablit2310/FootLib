@@ -13,7 +13,7 @@ It provides shared systems such as:
 Overhaul.Major.Semi-major.Patch/Hotfix/Minor-alpha(if alpha)/beta(if beta)/blank(if release)
 example 0.0.1.0
 1 Semi-major version
-NOTE: Overhaul ends support for all previos mods if not explicitly written otherwise
+NOTE: Overhaul ends support for all previous mods if not explicitly written otherwise
 ## Usage
 ### Maven Repo
 ```gradle
@@ -28,7 +28,7 @@ dependencies {
 }
 ```
 ### neoforge.mods.toml
-Add FootLib as a dependency in your mod's `mods.toml`:
+Add FootLib as a dependency in your mod's `neoforge.mods.toml`:
 
 ```toml
 [[dependencies.yourmod]]

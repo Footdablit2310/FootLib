@@ -12,24 +12,7 @@ tasks.named('wrapper', Wrapper).configure {
     // (Verify by checking gradle/wrapper/gradle-wrapper.properties to see if distributionUrl now points to `-all`)
     distributionType = Wrapper.DistributionType.BIN
 }
-processResources {
-    // Ensure that generated resources are created before processing resources.
-    expand(
-            'minecraft_version'      : minecraft_version,
-            'minecraft_version_range': minecraft_version_range,
-            'neo_version'            : neo_version,
-            'loader_version_range'   : loader_version_range,
-            'mod_id'                 : mod_id,
-            'mod_name'               : mod_name,
-            'mod_license'            : mod_license,
-            'mod_version'            : mod_version,
-            'create_version'         : create_version,
-            'ponder_version'         : ponder_version,
-            'flywheel_version'       : flywheel_version,
-            'registrate_version'     : registrate_version,
-            'jei_version'            : jei_version
-    )
-}
+
 version = mod_version
 group = mod_group_id
 
@@ -124,20 +107,14 @@ dependencies {
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     // JEI runtime
-    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
     // Create, Ponder, Flywheel, and Registrate dependencies
     implementation "net.neoforged:neoforge:${neo_version}"
     implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
     implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
-    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
+    localRuntime("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
-    // Example optional mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
-    // We add the full version to localRuntime, not runtimeOnly, so that we do not publish a dependency on it
-    // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
@@ -169,6 +146,11 @@ tasks.withType(ProcessResources).configureEach {
             mod_name               : mod_name,
             mod_license            : mod_license,
             mod_version            : mod_version,
+            create_version         : create_version,
+            ponder_version         : ponder_version,
+            flywheel_version       : flywheel_version,
+            registrate_version     : registrate_version,
+            jei_version            : jei_version
     ]
     inputs.properties replaceProperties
 

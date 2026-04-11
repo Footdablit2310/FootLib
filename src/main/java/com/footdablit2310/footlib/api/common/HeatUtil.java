@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.common;
+package com.footdablit2310.footlib.api.common;
 
 public final class HeatUtil {
 

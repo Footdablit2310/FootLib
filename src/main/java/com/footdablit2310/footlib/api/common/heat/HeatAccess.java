@@ -5,8 +5,18 @@ import net.minecraft.world.level.Level;
 
 public class HeatAccess {
 
+    public static int getTemperature(Level level, BlockPos pos) {
+        // TODO: real heat grid
+        return 0;
+    }
+
     public static HeatTier getHeatTier(Level level, BlockPos pos) {
-        // TODO: Implement PTF heat grid lookup
-        return HeatTier.NONE;
+        return HeatTier.fromTemperature(getTemperature(level, pos));
+    }
+
+    public static HeatInfo getHeatInfo(Level level, BlockPos pos) {
+        int temp = getTemperature(level, pos);
+        HeatTier tier = HeatTier.fromTemperature(temp);
+        return HeatInfo.of(tier, temp);
     }
 }

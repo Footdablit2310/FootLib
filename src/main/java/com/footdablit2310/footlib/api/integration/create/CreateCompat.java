@@ -6,8 +6,11 @@ public final class CreateCompat {
 
     private CreateCompat() {}
 
+    public static boolean CreateInstalled() {
+        return ModPresence.isInstalled(ModPresence.CREATE);
+    }
     public static void init() {
-        if (!ModPresence.isInstalled("create")) {
+        if (!CreateInstalled()) {
             return;
         }
         // TODO: Add any static init logic for Create compat here. This method is called from the main mod class during common setup.

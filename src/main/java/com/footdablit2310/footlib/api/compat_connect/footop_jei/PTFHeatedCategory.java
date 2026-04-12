@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class PTFHeatedCategory implements mezz.jei.api.recipe.category.IRecipeCategory<JEIRecipeWrapper> {
 
+    
     public static final RecipeType<JEIRecipeWrapper> TYPE =
             JEICategoryBuilder.type("footorganicprocessing:ptf_heated", JEIRecipeWrapper.class);
 

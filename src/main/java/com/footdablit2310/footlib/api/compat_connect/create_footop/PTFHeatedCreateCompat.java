@@ -10,7 +10,7 @@ public final class PTFHeatedCreateCompat {
     private PTFHeatedCreateCompat() {}
 
     public static void convert(JsonObject ptfRecipe) {
-        if (!ModPresence.isInstalled("create")) return;
+        if (!ModPresence.isInstalled("footorganicprocessing")) return;
 
         String heat = ptfRecipe.get("heat").getAsString();
 

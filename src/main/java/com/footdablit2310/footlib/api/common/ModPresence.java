@@ -16,22 +16,22 @@ public final class ModPresence {
      *   ModPresence.isInstalled("footorganicprocessing")
      */
     public static boolean isInstalled(String modId) {
-        return ModList.get().isLoaded(modId);
+        return ReturnAllInstalledModIdsAsString().contains(modId);
     }
     /**
      * This gets all the mods id's from the mods that are installed and returns them as a List<String>
      */
     public static List<String> ReturnAllInstalledModIdsAsString() {
-        for (ModContainer ModData : ModList.get().getSortedMods()) {
+        for (ModContainer ModData : ReturnAllInstalledModContainerAsList()) {
             ReturnAllInstalledModIdsAsString().add(ModData.getModId());
         };
         return ReturnAllInstalledModIdsAsString();
     };
     /**
      * This method gives you a sorted List<ModContainer> with all of the installed mods available 
-     * NOTE: This does not process any data it just returns a List<ModContainer>
+     * NOTE: This does not process any data it just returns a List<{@link ModContainer}>
      * NOTE: Uses ModContainer for raw data with the import net.neoforged.fml.ModContainer
-     * @return List<ModContainer>
+     * @return List<{@link ModContainer}> with all the installed mods available
      */
     public static List<ModContainer> ReturnAllInstalledModContainerAsList() {
         return ModList.get().getSortedMods();
@@ -42,6 +42,8 @@ public final class ModPresence {
     public static final String JEI = "jei";
     public static final String EMI = "emi";
     public static final String CREATE_RAILWAYS_NAVIGATOR = "createrailwaysnavigator";
+    public static final String PONDER = "ponder";
+    public static final String FLYWHEEL = "flywheel";
 
     //My own mods mod id as constants
     public static final String FOOTLIB = "footlib";

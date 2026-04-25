@@ -10,30 +10,49 @@ public final class NbtUtil {
     private NbtUtil() {}
 
     // -------------------------------------------------------------------------
-    // Basic types
+    // Basic types (save)
     // -------------------------------------------------------------------------
-    public static void putIfNotNull(CompoundTag tag, String key, String value) {
-        if (value != null) tag.putString(key, value);
+    public static void putString(CompoundTag tag, String key, String value) {
+        tag.putString(key, value);
     }
 
-    public static void putIfNotNull(CompoundTag tag, String key, Integer value) {
-        if (value != null) tag.putInt(key, value);
+    public static void putInt(CompoundTag tag, String key, int value) {
+        tag.putInt(key, value);
     }
 
-    public static void putIfNotNull(CompoundTag tag, String key, Boolean value) {
-        if (value != null) tag.putBoolean(key, value);
+    public static void putBool(CompoundTag tag, String key, boolean value) {
+        tag.putBoolean(key, value);
     }
 
-    public static String getString(CompoundTag tag, String key, String fallback) {
-        return tag.contains(key) ? tag.getString(key) : fallback;
+    public static void putFloat(CompoundTag tag, String key, float value) {
+        tag.putFloat(key, value);
     }
 
-    public static int getInt(CompoundTag tag, String key, int fallback) {
-        return tag.contains(key) ? tag.getInt(key) : fallback;
+    public static void putDouble(CompoundTag tag, String key, double value) {
+        tag.putDouble(key, value);
     }
 
-    public static boolean getBool(CompoundTag tag, String key, boolean fallback) {
-        return tag.contains(key) ? tag.getBoolean(key) : fallback;
+    // -------------------------------------------------------------------------
+    // Basic types (load)
+    // -------------------------------------------------------------------------
+    public static String getString(CompoundTag tag, String key) {
+        return tag.getString(key);
+    }
+
+    public static int getInt(CompoundTag tag, String key) {
+        return tag.getInt(key);
+    }
+
+    public static boolean getBool(CompoundTag tag, String key) {
+        return tag.getBoolean(key);
+    }
+
+    public static float getFloat(CompoundTag tag, String key) {
+        return tag.getFloat(key);
+    }
+
+    public static double getDouble(CompoundTag tag, String key) {
+        return tag.getDouble(key);
     }
 
     // -------------------------------------------------------------------------
@@ -50,16 +69,13 @@ public final class NbtUtil {
     }
 
     // -------------------------------------------------------------------------
-    // EnergyStorage
+    // Energy (save/load raw value only)
     // -------------------------------------------------------------------------
     public static void putEnergy(CompoundTag tag, String key, EnergyStorage energy) {
         tag.putInt(key, energy.getEnergyStored());
     }
 
-    public static void getEnergy(CompoundTag tag, String key, EnergyStorage energy) {
-        if (tag.contains(key)) {
-            int stored = tag.getInt(key);
-            energy.receiveEnergy(stored, false);
-        }
+    public static int getEnergy(CompoundTag tag, String key) {
+        return tag.getInt(key);
     }
 }

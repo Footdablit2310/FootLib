@@ -68,4 +68,5 @@ buildSrc/
 hs_err_pid*
 replay_pid*
 
-# this is a neoforge modding environment, so we ignore the generated sources and resources
+# batch files for my development
+.bat

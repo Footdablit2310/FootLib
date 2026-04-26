@@ -1,9 +1,8 @@
 package com.footdablit2310.footlib.api.integration.create;
 
-import com.footdablit2310.footlib.api.common.heat.HeatTier;
-import com.footdablit2310.footlib.api.common.heat.HeatInfo;
-import com.footdablit2310.footlib.api.common.heat.HeatSource;
 import com.footdablit2310.footlib.api.common.ModPresence;
+import com.footdablit2310.footlib.api.registry.HeatTierRegistry;
+import com.footdablit2310.footlib.api.registry.helpers.HeatTier;
 
 import java.util.Optional;
 
@@ -40,21 +39,12 @@ public class CreateHeatIntegration {
      * Only HEATED and SUPERHEATED exist in Create.
      */
     public static Optional<String> toCreateHeatId(HeatTier tier) {
-        return switch (tier) {
-            case HEATED, HEATED_R -> Optional.of("create:heated");
-            case SUPERHEATED, SUPERHEATED_R -> Optional.of("create:superheated");
-            default -> Optional.empty(); // NONE, ULTRAHEATED, ULTRAHEATED_R
-        };
-    }
-
-    public static HeatInfo toHeatInfo(HeatTier tier) {
-        return new HeatInfo(tier.heatName(), tier.heat());
-    }
-
-    public static HeatInfo toHeatInfo(HeatSource source) {
-        return new HeatInfo(
-                source.outputTier().heatName(),
-                source.heatOutput()
-        );
+        if (tier == HeatTierRegistry.HEATED) {
+            return Optional.of("create:heated"); // HEATED is 750C in Create, which is the same as FootLib's HEATED tier.
+        } else if (tier == HeatTierRegistry.SUPERHEATED) {
+            return Optional.of("create:superheated"); // SUPERHEATED is 1500C in Create, which is the same as FootLib's SUPERHEATED tier.
+        } else {
+            return Optional.empty(); // NONE, ULTRAHEATED, ULTRAHEATED_R
+        }
     }
 }

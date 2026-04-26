@@ -68,5 +68,7 @@ buildSrc/
 hs_err_pid*
 replay_pid*
 
-# batch files for my development
+# files for my development
 *.bat
+*.py
+skipping

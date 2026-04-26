@@ -68,7 +68,11 @@ buildSrc/
 hs_err_pid*
 replay_pid*
 
-# files for my development
+# files and folders for my development
 *.bat
 *.py
-skipping
+*.pyi
+*.pyc
+*.pyo
+*.pyd
+pipeline/pipeline_config.toml

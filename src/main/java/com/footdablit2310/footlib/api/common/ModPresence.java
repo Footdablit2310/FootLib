@@ -2,6 +2,8 @@ package com.footdablit2310.footlib.api.common;
 
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModContainer;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public final class ModPresence {
@@ -9,35 +11,31 @@ public final class ModPresence {
     private ModPresence() {}
 
     /**
-     * Universal mod presence checker.
-     * Usage:
-     *   ModPresence.isInstalled("create")
-     *   ModPresence.isInstalled("jei")
-     *   ModPresence.isInstalled("footorganicprocessing")
+     * Check if a mod is installed by mod ID.
      */
     public static boolean isInstalled(String modId) {
-        return ReturnAllInstalledModIdsAsString().contains(modId);
+        return ModList.get().isLoaded(modId);
     }
+
     /**
-     * This gets all the mods id's from the mods that are installed and returns them as a List<String>
+     * Returns a List<String> of all installed mod IDs.
      */
     public static List<String> ReturnAllInstalledModIdsAsString() {
-        for (ModContainer ModData : ReturnAllInstalledModContainerAsList()) {
-            ReturnAllInstalledModIdsAsString().add(ModData.getModId());
-        };
-        return ReturnAllInstalledModIdsAsString();
-    };
+        List<String> ids = new ArrayList<>();
+        for (ModContainer mod : ModList.get().getSortedMods()) {
+            ids.add(mod.getModId());
+        }
+        return ids;
+    }
+
     /**
-     * This method gives you a sorted List<ModContainer> with all of the installed mods available 
-     * NOTE: This does not process any data it just returns a List<{@link ModContainer}>
-     * NOTE: Uses ModContainer for raw data with the import net.neoforged.fml.ModContainer
-     * @return List<{@link ModContainer}> with all the installed mods available
+     * Returns a List<ModContainer> of all installed mods.
      */
     public static List<ModContainer> ReturnAllInstalledModContainerAsList() {
         return ModList.get().getSortedMods();
     }
 
-    //Others mods mod id as constants
+    // Other mod IDs
     public static final String CREATE = "create";
     public static final String JEI = "jei";
     public static final String EMI = "emi";
@@ -45,7 +43,7 @@ public final class ModPresence {
     public static final String PONDER = "ponder";
     public static final String FLYWHEEL = "flywheel";
 
-    //My own mods mod id as constants
+    // Your mods
     public static final String FOOTLIB = "footlib";
     public static final String FOOT_DEVICES = "footdevices";
     public static final String FOOT_ELECTRICITY = "footelectricity";

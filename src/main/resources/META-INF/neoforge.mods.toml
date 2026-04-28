@@ -20,7 +20,7 @@ side="BOTH"
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"
-versionRange="[21.1.200,21.1.300)"
+versionRange="[21.1.219,21.1.300)"
 ordering="NONE"
 side="BOTH"
 

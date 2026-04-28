@@ -1,8 +1,9 @@
 package com.footdablit2310.footlib.api.registry;
 
-import com.footdablit2310.footlib.api.registry.helpers.HeatTier;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.footdablit2310.footlib.api.registry.helpers.heat.HeatTier;
 
 public final class HeatTierRegistry {
 

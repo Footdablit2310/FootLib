@@ -1,16 +1,14 @@
-package com.footdablit2310.footlib.api.common.multiblock;
+package com.footdablit2310.footlib.api.registry.helpers.multiblock;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Universal multiblock validator for ANY shape:
- * - Shape2D
- * - Shape3D
  * - ShapeCoords
  *
  * Supports:
@@ -31,15 +29,15 @@ public class MultiBlockChecker {
     // ------------------------------------------------------------
     // Main check method
     // ------------------------------------------------------------
-    public static Result check(Level level, BlockPos controllerPos, MultiBlockShape shape) {
+    public static Result check(Level level, BlockPos controllerPos, ShapeCoords shape) {
 
         // Convert ANY shape → coordinate map
-        Map<BlockPos, Block> base = MultiBlockHelpers.toCoords(shape);
+        Map<BlockPos, BlockState> base = shape.blocks();
 
         // Try all rotations
         for (int rot = 0; rot < 4; rot++) {
 
-            Map<BlockPos, Block> rotated = switch (rot) {
+            Map<BlockPos, BlockState> rotated = switch (rot) {
                 case 1 -> MultiBlockHelpers.rotate90(base);
                 case 2 -> MultiBlockHelpers.rotate180(base);
                 case 3 -> MultiBlockHelpers.rotate270(base);
@@ -49,12 +47,12 @@ public class MultiBlockChecker {
             // Try mirrored and non-mirrored
             for (boolean mirror : new boolean[]{false, true}) {
 
-                Map<BlockPos, Block> variant = mirror
+                Map<BlockPos, BlockState> variant = mirror
                         ? MultiBlockHelpers.mirrorX(rotated)
                         : rotated;
 
                 // Normalize shape so controller is at (0,0,0)
-                Map<BlockPos, Block> normalized = normalize(variant);
+                Map<BlockPos, BlockState> normalized = normalize(variant);
 
                 // Check match
                 if (MultiBlockHelpers.matches(level, controllerPos, normalized)) {
@@ -69,7 +67,7 @@ public class MultiBlockChecker {
     // ------------------------------------------------------------
     // Normalize shape so minimum coordinate becomes (0,0,0)
     // ------------------------------------------------------------
-    private static Map<BlockPos, Block> normalize(Map<BlockPos, Block> shape) {
+    private static Map<BlockPos, BlockState> normalize(Map<BlockPos, BlockState> shape) {
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int minZ = Integer.MAX_VALUE;
@@ -82,7 +80,7 @@ public class MultiBlockChecker {
 
         BlockPos offset = new BlockPos(-minX, -minY, -minZ);
 
-        Map<BlockPos, Block> out = new HashMap<>();
+        Map<BlockPos, BlockState> out = new HashMap<>();
         shape.forEach((pos, block) ->
                 out.put(pos.offset(offset), block));
 

@@ -1,22 +1,20 @@
-package com.footdablit2310.footlib.api.common.multiblock;
+package com.footdablit2310.footlib.api.registry.helpers.multiblock;
 
 import java.util.Map;
 
 /**
  * Holds all tiered patterns for a single multiblock.
- *
  * tier -> (coords -> block)
- * coords = [x, y, z] relative positions
  */
 public class MultiBlockDataFormat {
 
-    private final Map<Integer, MultiBlockShape> tierShapes;
+    private final Map<Integer, ShapeCoords> tierShapes;
 
-    public MultiBlockDataFormat(Map<Integer, MultiBlockShape> tierShapes) {
+    public MultiBlockDataFormat(Map<Integer, ShapeCoords> tierShapes) {
         this.tierShapes = Map.copyOf(tierShapes);
     }
 
-    public MultiBlockShape shapeForTier(int tier) {
+    public ShapeCoords shapeForTier(int tier) {
         return tierShapes.get(tier);
     }
 
@@ -28,7 +26,7 @@ public class MultiBlockDataFormat {
         return tierShapes.size();
     }
 
-    public Map<Integer, MultiBlockShape> allShapes() {
+    public Map<Integer, ShapeCoords> allShapes() {
         return tierShapes;
     }
 }

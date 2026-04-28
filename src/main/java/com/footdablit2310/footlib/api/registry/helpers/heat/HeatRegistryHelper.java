@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.api.registry.helpers;
+package com.footdablit2310.footlib.api.registry.helpers.heat;
 
 import com.footdablit2310.footlib.api.registry.HeatTierRegistry;
 

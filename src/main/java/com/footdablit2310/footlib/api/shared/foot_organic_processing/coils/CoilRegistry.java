@@ -3,8 +3,8 @@ package com.footdablit2310.footlib.api.shared.foot_organic_processing.coils;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.footdablit2310.footlib.api.registry.HeatTierRegistry;
-import com.footdablit2310.footlib.api.registry.helpers.heat.HeatTier;
+import com.footdablit2310.footlib.registry.HeatTierRegistry;
+import com.footdablit2310.footlib.registry.registry.helpers.heat.HeatTier;
 
 public class CoilRegistry {
     private static final Map<String, CoilRegistryFormat> COILS = new LinkedHashMap<>();

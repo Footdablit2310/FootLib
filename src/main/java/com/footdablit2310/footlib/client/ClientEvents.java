@@ -16,7 +16,6 @@ public final class ClientEvents {
         float pt = event.getPartialTick().getGameTimeDeltaPartialTick(false);
 
         StructurePreviewRenderer.render(
-                event.getLevelRenderer(),
                 event.getPoseStack(),
                 pt
         );

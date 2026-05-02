@@ -1,77 +1,57 @@
 package com.footdablit2310.footlib.network;
 
+import com.footdablit2310.footlib.api.common.visualize.FootLibVisualizationAPI;
+import com.footdablit2310.footlib.client.StructurePreviewRenderer;
+
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Direction;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.Minecraft;
 
-import java.util.ArrayList;
-import java.util.List;
+public record StructurePreviewPacket(
+        String id,
+        int tier,
+        BlockPos origin,
+        Direction facing
+) implements CustomPacketPayload {
 
-public final class StructurePreviewPacket {
+    public static final ResourceLocation ID =
+            ResourceLocation.fromNamespaceAndPath("footlib", "structure_preview");
 
-    private final BlockPos anchor;
-    private final List<BlockPos> relPositions;
-    private final List<BlockState> states;
-    private final boolean full;
+    public static final Type<StructurePreviewPacket> TYPE = new Type<>(ID);
 
-    public StructurePreviewPacket(BlockPos anchor,
-                                  List<BlockPos> relPositions,
-                                  List<BlockState> states,
-                                  boolean full) {
-        this.anchor = anchor;
-        this.relPositions = relPositions;
-        this.states = states;
-        this.full = full;
+    public static final StreamCodec<RegistryFriendlyByteBuf, StructurePreviewPacket> STREAM_CODEC =
+        new StreamCodec<RegistryFriendlyByteBuf, StructurePreviewPacket>() {
+            @Override
+            public StructurePreviewPacket decode(RegistryFriendlyByteBuf buf) {
+                String id = buf.readUtf();
+                int tier = buf.readInt();
+                BlockPos origin = buf.readBlockPos();
+                Direction facing = Direction.from3DDataValue(buf.readInt());
+                return new StructurePreviewPacket(id, tier, origin, facing);
+            }
+
+            @Override
+            public void encode(RegistryFriendlyByteBuf buf, StructurePreviewPacket pkt) {
+                buf.writeUtf(pkt.id());
+                buf.writeInt(pkt.tier());
+                buf.writeBlockPos(pkt.origin());
+                buf.writeInt(pkt.facing().get3DDataValue());
+            }
+        };
+
+    @Override
+    public Type<StructurePreviewPacket> type() {
+        return TYPE;
     }
 
-    // --------------------------
-    // ENCODE
-    // --------------------------
-    @Deprecated(since = "0.0.1.3", forRemoval = false)
-    public static void encode(StructurePreviewPacket pkt, FriendlyByteBuf buf) {
-        buf.writeBlockPos(pkt.anchor);
-        buf.writeBoolean(pkt.full);
-
-        int size = pkt.relPositions.size();
-        buf.writeVarInt(size);
-
-        for (int i = 0; i < size; i++) {
-            buf.writeBlockPos(pkt.relPositions.get(i));
-            buf.writeWithCodec(NbtOps.INSTANCE, BlockState.CODEC, pkt.states.get(i));
+    public static void handleClient(StructurePreviewPacket pkt) {
+        var def = FootLibVisualizationAPI.get(pkt.id(), pkt.tier());
+        if (def != null && Minecraft.getInstance().level != null) {
+            StructurePreviewRenderer.show(def, pkt.origin(), pkt.facing());
         }
-    }
-
-    // --------------------------
-    // DECODE
-    // --------------------------
-    @Deprecated(since = "0.0.1.3", forRemoval = false)
-    public static StructurePreviewPacket decode(FriendlyByteBuf buf) {
-        BlockPos anchor = buf.readBlockPos();
-        boolean full = buf.readBoolean();
-
-        int size = buf.readVarInt();
-        List<BlockPos> rel = new ArrayList<>(size);
-        List<BlockState> states = new ArrayList<>(size);
-
-        for (int i = 0; i < size; i++) {
-            rel.add(buf.readBlockPos());
-            states.add(buf.readWithCodec(NbtOps.INSTANCE, BlockState.CODEC, NbtAccounter.unlimitedHeap()));
-        }
-
-        return new StructurePreviewPacket(anchor, rel, states, full);
-    }
-
-    // --------------------------
-    // CLIENT APPLY
-    // --------------------------
-    public void applyClient() {
-        com.footdablit2310.footlib.client.StructurePreviewState.set(
-                anchor,
-                relPositions,
-                states,
-                full
-        );
     }
 }

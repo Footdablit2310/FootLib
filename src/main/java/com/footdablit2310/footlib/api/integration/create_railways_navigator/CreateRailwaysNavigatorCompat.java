@@ -1,6 +1,6 @@
 package com.footdablit2310.footlib.api.integration.create_railways_navigator;
 
-import com.footdablit2310.footlib.api.common.ModPresence;
+import com.footdablit2310.footlib.api.common.basic.ModPresence;
 
 public final class CreateRailwaysNavigatorCompat {
     public static boolean CreateRailwaysNavigatorInstalled() {

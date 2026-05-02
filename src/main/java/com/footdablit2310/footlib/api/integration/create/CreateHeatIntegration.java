@@ -1,6 +1,6 @@
 package com.footdablit2310.footlib.api.integration.create;
 
-import com.footdablit2310.footlib.api.common.ModPresence;
+import com.footdablit2310.footlib.api.common.basic.ModPresence;
 import com.footdablit2310.footlib.registry.HeatTierRegistry;
 import com.footdablit2310.footlib.registry.helpers.heat.HeatTier;
 

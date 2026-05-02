@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.api.common;
+package com.footdablit2310.footlib.api.common.basic;
 
 public class PTFRecipeJsonUtil extends RecipeJsonBuilderUtil {
 

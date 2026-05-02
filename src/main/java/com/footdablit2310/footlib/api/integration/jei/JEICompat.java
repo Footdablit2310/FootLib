@@ -1,6 +1,6 @@
 package com.footdablit2310.footlib.api.integration.jei;
 
-import com.footdablit2310.footlib.api.common.ModPresence;
+import com.footdablit2310.footlib.api.common.basic.ModPresence;
 
 public final class JEICompat {
 

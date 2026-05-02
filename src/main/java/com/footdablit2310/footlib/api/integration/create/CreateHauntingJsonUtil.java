@@ -1,6 +1,6 @@
 package com.footdablit2310.footlib.api.integration.create;
 
-import com.footdablit2310.footlib.api.common.RecipeJsonBuilderUtil;
+import com.footdablit2310.footlib.api.common.basic.RecipeJsonBuilderUtil;
 
 public class CreateHauntingJsonUtil extends RecipeJsonBuilderUtil {
 

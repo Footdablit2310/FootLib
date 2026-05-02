@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.api.common;
+package com.footdablit2310.footlib.api.common.basic;
 
 import net.minecraft.nbt.CompoundTag;
 

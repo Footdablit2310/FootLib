@@ -1,9 +1,9 @@
 package com.footdablit2310.footlib.api.integration.create;
 
+import com.footdablit2310.footlib.api.common.basic.ItemJsonUtil;
+import com.footdablit2310.footlib.api.common.basic.RecipeJsonBuilderUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.footdablit2310.footlib.api.common.ItemJsonUtil;
-import com.footdablit2310.footlib.api.common.RecipeJsonBuilderUtil;
 
 public class CreateSequencedAssemblyJsonUtil extends RecipeJsonBuilderUtil {
 

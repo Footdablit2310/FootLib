@@ -1,44 +1,80 @@
 package com.footdablit2310.footlib.client;
 
+import com.footdablit2310.footlib.api.common.visualize.data.StructureDefinition;
+
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.List;
+import net.minecraft.world.level.block.Rotation;
 
 public final class StructurePreviewRenderer {
 
-    private static List<BlockPos> positions;
-    private static List<BlockState> states;
-    private static boolean full;
+    private static StructureDefinition def;
+    private static BlockPos origin;
+    private static Direction facing;
 
-    public static void set(List<BlockPos> posList, List<BlockState> stateList, boolean fullMode) {
-        positions = posList;
-        states = stateList;
-        full = fullMode;
+    public static void show(StructureDefinition d, BlockPos o, Direction f) {
+        def = d;
+        origin = o;
+        facing = f;
     }
 
-    public static void clear() {
-        positions = null;
-        states = null;
-    }
+    @Deprecated // Uses Depracated Neoforge Code
+    public static void render(PoseStack pose, float partialTick) {
+        if (def == null) return;
 
-    public static void render(PoseStack pose) {
-        if (positions == null || states == null) return;
+        var mc = Minecraft.getInstance();
+        var level = mc.level;
+        if (level == null) return;
 
-        Minecraft mc = Minecraft.getInstance();
+        var cam = mc.gameRenderer.getMainCamera();
+        var camPos = cam.getPosition();
 
-        for (int i = 0; i < positions.size(); i++) {
-            BlockPos pos = positions.get(i);
-            BlockState state = states.get(i);
+        pose.pushPose();
+        pose.translate(-camPos.x, -camPos.y, -camPos.z);
 
-            if (full) {
-                GhostBlockRenderer.renderFull(mc, pos, state, pose);
-            } else {
-                GhostBlockRenderer.renderOutline(mc, pos, pose);
-            }
+        MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
+        var dispatcher = mc.getBlockRenderer();
+
+        // Convert facing → Rotation enum
+        Rotation rotation = switch (facing) {
+            case NORTH -> Rotation.NONE;
+            case SOUTH -> Rotation.CLOCKWISE_180;
+            case WEST  -> Rotation.COUNTERCLOCKWISE_90;
+            case EAST  -> Rotation.CLOCKWISE_90;
+            default    -> Rotation.NONE;
+        };
+
+        for (var entry : def.getLayout().entrySet()) {
+
+            BlockPos rel = entry.getKey();
+            Block block = entry.getValue();
+            BlockState state = block.defaultBlockState();
+
+            // rotate relative position
+            BlockPos rotated = rel.rotate(rotation);
+
+            // world position
+            BlockPos worldPos = origin.offset(rotated);
+
+            pose.pushPose();
+            pose.translate(worldPos.getX(), worldPos.getY(), worldPos.getZ());
+
+            dispatcher.renderSingleBlock(
+                    state,
+                    pose,
+                    buffer,
+                    15728880,   // full brightness
+                    0           // overlay
+            );
+
+            pose.popPose();
         }
+
+        pose.popPose();
     }
 }

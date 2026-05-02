@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.api.common;
+package com.footdablit2310.footlib.api.common.basic;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

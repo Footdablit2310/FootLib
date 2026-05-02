@@ -1,12 +1,11 @@
 package com.footdablit2310.footlib.api.common.commands;
 
+import com.footdablit2310.footlib.api.common.basic.ModPresence;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-
-import com.footdablit2310.footlib.api.common.ModPresence;
 
 public final class FootLibModListCommand {
 

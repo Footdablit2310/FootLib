@@ -75,4 +75,5 @@ replay_pid*
 *.pyc
 *.pyo
 *.pyd
-pipeline/pipeline_config.toml
+footpipeline.toml
+run_pipeline.ps1

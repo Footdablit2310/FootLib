@@ -8,6 +8,7 @@ import com.footdablit2310.footlib.FootLib;
 @Mod(FootLib.MOD_ID)
 public final class ClientEvents {
 
+    @SuppressWarnings("deprecation")
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS)

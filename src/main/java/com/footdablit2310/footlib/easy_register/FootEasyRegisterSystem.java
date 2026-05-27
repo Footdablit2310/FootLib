@@ -6,6 +6,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.minecraft.world.inventory.MenuType;
@@ -77,4 +78,8 @@ public final class FootEasyRegisterSystem {
     public FERCreativeTabBuilder creativeTab(String name) {
         return new FERCreativeTabBuilder(this, name);
     }
+    public <S extends FlowingFluid, F extends FlowingFluid> FERFluidBuilder<S, F> fluid(String name) {
+        return new FERFluidBuilder<S, F>(this, name);
+    }
+
 }

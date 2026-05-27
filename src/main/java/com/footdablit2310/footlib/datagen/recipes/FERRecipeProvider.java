@@ -1,8 +1,8 @@
 package com.footdablit2310.footlib.datagen.recipes;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.core.HolderLookup;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -11,7 +11,7 @@ public abstract class FERRecipeProvider extends RecipeProvider {
     protected final CompletableFuture<HolderLookup.Provider> registries;
 
     public FERRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
-        super(output, registries); // ✅ correct constructor
+        super(output, registries);
         this.registries = registries;
     }
 }

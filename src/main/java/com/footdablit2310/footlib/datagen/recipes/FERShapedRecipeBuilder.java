@@ -1,0 +1,16 @@
+package com.footdablit2310.footlib.datagen.recipes;
+
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.world.level.ItemLike;
+
+public class FERShapedRecipeBuilder {
+
+    public static ShapedRecipeBuilder shaped(ItemLike result) {
+        return ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result);
+    }
+
+    public static ShapedRecipeBuilder shaped(ItemLike result, int count) {
+        return ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result, count);
+    }
+}

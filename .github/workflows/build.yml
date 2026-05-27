@@ -1,25 +1,75 @@
-name: Build
+name: Upload Release to Modrinth
 
-on: [push, pull_request]
+on:
+  release:
+    types: [published]
 
 jobs:
-  build:
+  upload:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
 
-      - name: Setup JDK 21
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 21
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - name: Build FootLib
+        run: ./gradlew build --no-daemon
 
-      - name: Build with Gradle
-        run: ./gradlew build
+      - name: Find built JAR
+        id: jar
+        run: |
+          FILE=$(ls build/libs/*.jar | head -n 1)
+          echo "jar=$FILE" >> $GITHUB_OUTPUT
+
+      - name: Upload to Modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID }}
+          VERSION: ${{ github.event.release.tag_name }}
+          CHANGELOG: ${{ github.event.release.body }}
+        run: |
+          python3 << 'EOF'
+          import pathlib, os, json
+          import requests
+
+          MODRINTH_API = "https://api.modrinth.com/v2/version"
+
+          jar_path = pathlib.Path("${{ steps.jar.outputs.jar }}")
+          token = os.environ["MODRINTH_TOKEN"]
+
+          metadata = {
+              "project_id": os.environ["PROJECT_ID"],
+              "version_number": os.environ["VERSION"],
+              "changelog": os.environ["CHANGELOG"] or "No changelog provided.",
+              "game_versions": ["1.21.1"],
+              "loaders": ["neoforge"],
+              "featured": True,
+              "dependencies": []
+          }
+
+          with jar_path.open("rb") as f:
+              files = {
+                  "data": (None, json.dumps(metadata), "application/json"),
+                  "file": (jar_path.name, f, "application/java-archive"),
+              }
+
+              headers = {"Authorization": f"Bearer " + token}
+
+              r = requests.post(MODRINTH_API, files=files, headers=headers)
+              r.raise_for_status()
+              print("Uploaded to Modrinth:", r.json()["id"])
+          EOF

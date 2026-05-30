@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.datagen.tags;
+package com.footdablit2310.footlib.easy_register.datagen.tags;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;

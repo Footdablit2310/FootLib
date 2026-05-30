@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.datagen.recipes;
+package com.footdablit2310.footlib.easy_register.datagen.recipes;
 
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;

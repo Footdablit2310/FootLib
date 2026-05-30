@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.datagen.models;
+package com.footdablit2310.footlib.easy_register.datagen.models;
 
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;

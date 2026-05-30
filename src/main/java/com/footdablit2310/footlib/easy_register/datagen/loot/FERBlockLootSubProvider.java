@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.datagen.loot;
+package com.footdablit2310.footlib.easy_register.datagen.loot;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.flag.FeatureFlags;

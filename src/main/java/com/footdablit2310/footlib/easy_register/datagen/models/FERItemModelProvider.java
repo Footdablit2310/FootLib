@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.datagen.models;
+package com.footdablit2310.footlib.easy_register.datagen.models;
 
 import java.util.concurrent.CompletableFuture;
 

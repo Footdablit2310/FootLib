@@ -57,8 +57,8 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
     private boolean addToCreativeTab = false;
     private CreativeModeTab explicitTab = null;
 
-    // Static creative tab registry
-    
+    // Datagen
+    private boolean enableDatagen = false;
 
 
     public FERFluidBuilder(FootEasyRegisterSystem reg, String name) {
@@ -117,6 +117,11 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
         this.addToCreativeTab = true;
         return this;
     }
+    public FERFluidBuilder<S, F> datagen() {
+        this.enableDatagen = true;
+        return this;
+    }
+    
 
 
     // -------------------------------
@@ -190,6 +195,13 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
                     reg.tryAddToCreativeTab(() -> new ItemStack(fluidBlock.get()));
             }
         }
+        if (enableDatagen) {
+            if (bucket != null)
+                reg.registerItemModel(name + "_bucket", bucket.get());
+
+            reg.registerLang("fluid." + reg.getModId() + "." + name, FootEasyRegisterSystem.SnakeToPascalCase(name));
+        }
+
 
         // ---------------------------------------------------------
         // 8. Return the registration object

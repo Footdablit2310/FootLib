@@ -4,6 +4,9 @@ import com.footdablit2310.footlib.easy_register.builders.*;
 import com.footdablit2310.footlib.FootLib;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.resources.ResourceLocation;
+//import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class FootEasyRegisterSystem {
@@ -44,6 +48,28 @@ public final class FootEasyRegisterSystem {
     private FERCreativeTabBuilder activeTab;
     private boolean visualNameUsed = false;
     public Logger LOGGER;
+
+    //lang datagen
+    private final Map<String, String> creativeTabLang = new HashMap<>();
+    // Language
+    private final Map<String, String> langEntries = new HashMap<>();
+
+    // Blockstates
+    private final Map<ResourceLocation, Block> blockstateEntries = new HashMap<>();
+
+    // Item models
+    private final Map<ResourceLocation, Item> itemModelEntries = new HashMap<>();
+
+    // Loot tables
+    private final Map<ResourceLocation, Block> lootEntries = new HashMap<>();
+
+    // Tags
+    //private final Map<TagKey<Block>, List<Block>> blockTags = new HashMap<>();
+    //private final Map<TagKey<Item>, List<Item>> itemTags = new HashMap<>();
+
+    // Recipes
+    private final List<Consumer<RecipeOutput>> recipeEntries = new ArrayList<>();
+
 
     public FootEasyRegisterSystem(String modId, IEventBus bus, String visualName) {
         this.modId = modId;
@@ -81,6 +107,20 @@ public final class FootEasyRegisterSystem {
     public void markVisualNameUsed() {
         this.visualNameUsed = true;
     }
+    //datagen lang
+    public void registerCreativeTabLang(String key, String value) {
+        creativeTabLang.put(key, value);
+    }
+
+    public Map<String, String> getCreativeTabLang() {
+        return creativeTabLang;
+    }
+    public Map<String, String> getLangEntries() { return langEntries; }
+    public Map<ResourceLocation, Block> getBlockstateEntries() { return blockstateEntries; }
+    public Map<ResourceLocation, Item> getItemModelEntries() { return itemModelEntries; }
+    public Map<ResourceLocation, Block> getLootEntries() { return lootEntries; }
+    public List<Consumer<RecipeOutput>> getRecipeEntries() { return recipeEntries; }
+
 
     // ------------------------------------------------------------
     // Active creative tab (for auto‑population)
@@ -106,6 +146,43 @@ public final class FootEasyRegisterSystem {
     public void addToSpecificCreativeTab(CreativeModeTab tab, Supplier<ItemStack> stack) {
         explicitTabEntries.computeIfAbsent(tab, t -> new ArrayList<>()).add(stack);
     }
+    public void registerLang(String key, String value) {
+    langEntries.put(key, value);
+    }
+
+    public void registerBlockstate(String name, Block block) {
+        blockstateEntries.put(ResourceLocation.fromNamespaceAndPath(modId, name), block);
+    }
+
+    public void registerItemModel(String name, Item item) {
+        itemModelEntries.put(ResourceLocation.fromNamespaceAndPath(modId, name), item);
+    }
+
+    public void registerLoot(String name, Block block) {
+        lootEntries.put(ResourceLocation.fromNamespaceAndPath(modId, name), block);
+    }
+
+    public void registerRecipe(Consumer<RecipeOutput> builder) {
+        recipeEntries.add(builder);
+    }
+    public static String SnakeToPascalCase(String snake) {
+        if (snake == null || snake.isEmpty()) return snake;
+
+        StringBuilder result = new StringBuilder();
+        String[] parts = snake.split("_");
+
+        for (String part : parts) {
+            if (part.isEmpty()) continue;
+            result.append(Character.toUpperCase(part.charAt(0)));
+            if (part.length() > 1) {
+                result.append(part.substring(1));
+            }
+        }
+
+        return result.toString();
+    }
+
+
 
     // ------------------------------------------------------------
     // ⭐ BUILDER ENTRY POINTS

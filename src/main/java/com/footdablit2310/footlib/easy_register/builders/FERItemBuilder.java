@@ -17,6 +17,7 @@ public final class FERItemBuilder<T extends Item> {
     //Creative tab
     private boolean addToCreativeTab = false;
     private CreativeModeTab explicitTab = null;
+    private boolean enableDatagen = false;
 
 
     public FERItemBuilder(FootEasyRegisterSystem reg, String name, Supplier<T> factory) {
@@ -31,6 +32,10 @@ public final class FERItemBuilder<T extends Item> {
     public FERItemBuilder<T> creativeTab(CreativeModeTab tab) {
         this.addToCreativeTab = true;
         this.explicitTab = tab;
+        return this;
+    }
+    public FERItemBuilder<T> datagen() {
+        this.enableDatagen = true;
         return this;
     }
 
@@ -52,6 +57,11 @@ public final class FERItemBuilder<T extends Item> {
                 reg.tryAddToCreativeTab(() -> new ItemStack(holder.get()));
             }
         }
+        if (enableDatagen) {
+            reg.registerItemModel(name, holder.get());
+            reg.registerLang(holder.get().getDescriptionId(), FootEasyRegisterSystem.SnakeToPascalCase(name));
+        }
+
 
         return holder;
     }

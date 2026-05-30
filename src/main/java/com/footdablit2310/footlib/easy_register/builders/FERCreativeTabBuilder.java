@@ -3,6 +3,7 @@ package com.footdablit2310.footlib.easy_register.builders;
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +31,10 @@ public final class FERCreativeTabBuilder {
     private CreativeModeTab.DisplayItemsGenerator displayOverride = null;
     private final List<Supplier<ItemStack>> entries = new ArrayList<>();
 
+    @SuppressWarnings("unused")
+    private String langKey = null;
+    @SuppressWarnings("unused")
+    private String langValue = null;
 
     public FERCreativeTabBuilder(FootEasyRegisterSystem reg, String name) {
         this.reg = reg;
@@ -127,6 +132,18 @@ public final class FERCreativeTabBuilder {
         // ------------------------------------------
         else {
             finalTitle = Component.translatable("itemGroup." + reg.getModId() + "." + name);
+        }
+
+        // Case 1: Title is translatable
+        if (finalTitle.getContents() instanceof TranslatableContents tc) {
+            langKey = tc.getKey();
+            langValue = reg.getVisualName() != null ? reg.getVisualName() : name;
+        }
+
+        // Case 2: Title is literal
+        else {
+            langKey = "itemGroup." + reg.getModId() + "." + name;
+            langValue = finalTitle.getString();
         }
 
         // ------------------------------------------

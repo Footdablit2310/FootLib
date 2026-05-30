@@ -25,6 +25,7 @@ public final class FERBlockBuilder<T extends Block> {
     //Creative tab
     private boolean addToCreativeTab = false;
     private CreativeModeTab explicitTab = null;
+    private boolean enableDatagen = false;
 
     public FERBlockBuilder(FootEasyRegisterSystem reg, String name, Supplier<T> blockFactory) {
         this.reg = reg;
@@ -41,6 +42,10 @@ public final class FERBlockBuilder<T extends Block> {
     public FERBlockBuilder<T> item(Function<Item.Properties, Item> factory) {
         this.makeItem = true;
         this.itemFactory = factory;
+        return this;
+    }
+    public FERBlockBuilder<T> datagen() {
+        this.enableDatagen = true;
         return this;
     }
 
@@ -66,6 +71,13 @@ public final class FERBlockBuilder<T extends Block> {
                 reg.tryAddToCreativeTab(() -> new ItemStack(blockHolder.get()));
             }
         }
+        if (enableDatagen) {
+            reg.registerBlockstate(name,blockHolder.get());
+            reg.registerItemModel(name,blockHolder.get().asItem());
+            reg.registerLoot(name, blockHolder.get());
+            reg.registerLang(blockHolder.get().getDescriptionId(), FootEasyRegisterSystem.SnakeToPascalCase(name));
+        }
+
 
 
         return blockHolder;

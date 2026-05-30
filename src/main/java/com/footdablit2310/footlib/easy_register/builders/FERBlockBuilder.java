@@ -3,7 +3,9 @@ package com.footdablit2310.footlib.easy_register.builders;
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import java.util.function.Function;
@@ -19,6 +21,10 @@ public final class FERBlockBuilder<T extends Block> {
     private Function<Item.Properties, Item> itemFactory;
 
     private DeferredHolder<Block, T> blockHolder;
+
+    //Creative tab
+    private boolean addToCreativeTab = false;
+    private CreativeModeTab explicitTab = null;
 
     public FERBlockBuilder(FootEasyRegisterSystem reg, String name, Supplier<T> blockFactory) {
         this.reg = reg;
@@ -45,6 +51,22 @@ public final class FERBlockBuilder<T extends Block> {
         if (makeItem) {
             reg.items.register(name, () -> itemFactory.apply(new Item.Properties()));
         }
+        if (addToCreativeTab) {
+
+            if (explicitTab != null) {
+                reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(blockHolder.get()));
+            }
+            else {
+                if (!reg.hasCreativeTab()) {
+                    throw new IllegalStateException(
+                        "Block '" + name + "' called .creativeTab() but no FER creative tab exists."
+                    );
+                }
+
+                reg.tryAddToCreativeTab(() -> new ItemStack(blockHolder.get()));
+            }
+        }
+
 
         return blockHolder;
     }

@@ -1,6 +1,7 @@
 package com.footdablit2310.footlib.easy_register.builders;
 
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
+
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;

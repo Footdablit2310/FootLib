@@ -1,6 +1,5 @@
 package com.footdablit2310.footlib.easy_register.builders;
 
-import com.footdablit2310.footlib.FootLib;
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
 import com.footdablit2310.footlib.generic_base.fluid.FootFluidType;
 
@@ -12,13 +11,11 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
@@ -42,6 +39,7 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
     public DeferredHolder<Fluid, S> source;
     public DeferredHolder<Fluid, F> flowing;
 
+
     // Bucket
     private boolean makeBucket = false;
     private Supplier<Item.Properties> bucketProps = () -> new Item.Properties().stacksTo(1);
@@ -57,11 +55,10 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
 
     // Creative tab
     private boolean addToCreativeTab = false;
-    private CreativeModeTab creativeTab = null;
+    private CreativeModeTab explicitTab = null;
 
     // Static creative tab registry
-    private static final List<Consumer<net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent>> creativeTabEntries =
-            new ArrayList<>();
+    
 
 
     public FERFluidBuilder(FootEasyRegisterSystem reg, String name) {
@@ -113,9 +110,14 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
 
     public FERFluidBuilder<S, F> creativeTab(CreativeModeTab tab) {
         this.addToCreativeTab = true;
-        this.creativeTab = tab;
+        this.explicitTab = tab;
         return this;
     }
+    public FERFluidBuilder<S, F> creativeTab() {
+        this.addToCreativeTab = true;
+        return this;
+    }
+
 
     // -------------------------------
     // Registration
@@ -149,48 +151,43 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
                 new BaseFlowingFluid.Properties(type, source, flowing);
 
         // ---------------------------------------------------------
-        // 5. Determine creative tab (fallback logic)
-        // ---------------------------------------------------------
-        CreativeModeTab finalTab = creativeTab;
-
-        if (addToCreativeTab && finalTab == null) {
-            FootLib.LOGGER.warn("Fluid '{}' did not specify a creative tab. Using FootLib default tab.", name);
-            finalTab = FootLib.FOOTLIB_TAB.get();
-        }
-
-        // ---------------------------------------------------------
-        // 6. Optional fluid block
+        // 5. Optional fluid block
         // ---------------------------------------------------------
         if (makeFluidBlock) {
             fluidBlock = reg.blocks.register(name + "_fluid_block", () ->
                 new LiquidBlock(source.get(), blockProps.get())
             );
-
-            if (addToCreativeTab && finalTab != null) {
-                CreativeModeTab tab = finalTab;
-                creativeTabEntries.add(event -> {
-                    if (event.getTab() == tab) {
-                        event.accept(fluidBlock.get());
-                    }
-                });
-            }
         }
 
         // ---------------------------------------------------------
-        // 7. Optional bucket item
+        // 6. Optional bucket item
         // ---------------------------------------------------------
         if (makeBucket) {
             bucket = reg.items.register(name + "_bucket", () ->
                 new BucketItem(source.get(), bucketProps.get())
             );
+        }
+        // ---------------------------------------------------------
+        // 7. Determine creative tab (fallback logic)
+        // ---------------------------------------------------------
+        if (addToCreativeTab) {
+            if (explicitTab != null) {
+                if (bucket != null)
+                    reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(bucket.get()));
+                if (fluidBlock != null)
+                    reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(fluidBlock.get()));
+            }
+            else {
+                if (!reg.hasCreativeTab()) {
+                    throw new IllegalStateException(
+                        "Fluid '" + name + "' called .creativeTab() but no FER creative tab exists."
+                    );
+                }
 
-            if (addToCreativeTab && finalTab != null) {
-                CreativeModeTab tab = finalTab;
-                creativeTabEntries.add(event -> {
-                    if (event.getTab() == tab) {
-                        event.accept(bucket.get());
-                    }
-                });
+                if (bucket != null)
+                    reg.tryAddToCreativeTab(() -> new ItemStack(bucket.get()));
+                if (fluidBlock != null)
+                    reg.tryAddToCreativeTab(() -> new ItemStack(fluidBlock.get()));
             }
         }
 

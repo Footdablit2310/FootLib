@@ -22,7 +22,7 @@ public final class FERCreativeTabBuilder {
     private Component title = null;
 
     private boolean enableSearchBar = false;
-    private int searchBarWidth = 80; // NeoForge default
+    private int searchBarWidth = 80;
 
     private final List<ResourceLocation> beforeTabs = new ArrayList<>();
     private final List<ResourceLocation> afterTabs = new ArrayList<>();
@@ -87,39 +87,88 @@ public final class FERCreativeTabBuilder {
 
     public DeferredHolder<CreativeModeTab, CreativeModeTab> register() {
 
-        Component finalTitle = (title != null)
-                ? title
-                : Component.translatable("itemGroup." + reg.getModId() + "." + name);
+        boolean hasExplicitTitle = (this.title != null);
+        boolean hasVisualName    = (reg.getVisualName() != null && !reg.getVisualName().isBlank());
 
-        return reg.tabs.register(name, () -> {
+        Component finalTitle;
 
-            CreativeModeTab.Builder builder = CreativeModeTab.builder()
-                    .title(finalTitle)
-                    .icon(icon);
+        // ------------------------------------------
+        // CASE 1 — Explicit title always wins
+        // ------------------------------------------
+        if (hasExplicitTitle) {
+            finalTitle = this.title;
+        }
 
-            // Search bar (NeoForge requires width)
-            if (enableSearchBar) {
-                builder = builder.withSearchBar(searchBarWidth);
+        // ------------------------------------------
+        // CASE 2 — No explicit title, visualName exists
+        // ------------------------------------------
+        else if (hasVisualName) {
+
+            // Check if visualName already used by another tab
+            if (reg.isVisualNameUsed()) {
+                throw new IllegalStateException(
+                    "Creative tab '" + name + "' attempted to use visualName '" +
+                    reg.getVisualName() + "', but it is already used by another tab."
+                );
             }
 
-            // Ordering
-            if (!beforeTabs.isEmpty()) {
-                builder = builder.withTabsBefore(beforeTabs.toArray(ResourceLocation[]::new));
-            }
-            if (!afterTabs.isEmpty()) {
-                builder = builder.withTabsAfter(afterTabs.toArray(ResourceLocation[]::new));
-            }
+            reg.LOGGER.warn(
+                "No title provided for creative tab '{}', using visualName='{}'",
+                name, reg.getVisualName()
+            );
 
-            // Items
-            builder = builder.displayItems((params, output) -> {
-                if (displayOverride != null) {
-                    displayOverride.accept(params, output);
-                } else {
-                    entries.forEach(s -> output.accept(s.get()));
+            reg.markVisualNameUsed(); // mark as consumed
+
+            finalTitle = Component.literal(reg.getVisualName());
+        }
+
+        // ------------------------------------------
+        // CASE 3 — No title, no visualName → fallback
+        // ------------------------------------------
+        else {
+            finalTitle = Component.translatable("itemGroup." + reg.getModId() + "." + name);
+        }
+
+        // ------------------------------------------
+        // REGISTER TAB
+        // ------------------------------------------
+
+        DeferredHolder<CreativeModeTab, CreativeModeTab> holder =
+            reg.tabs.register(name, () -> {
+
+                CreativeModeTab.Builder builder = CreativeModeTab.builder()
+                        .title(finalTitle)
+                        .icon(icon);
+
+                if (enableSearchBar) {
+                    builder = builder.withSearchBar(searchBarWidth);
                 }
-            });
 
-            return builder.build();
-        });
+                if (!beforeTabs.isEmpty()) {
+                    builder = builder.withTabsBefore(beforeTabs.toArray(ResourceLocation[]::new));
+                }
+                if (!afterTabs.isEmpty()) {
+                    builder = builder.withTabsAfter(afterTabs.toArray(ResourceLocation[]::new));
+                }
+
+                builder = builder.displayItems((params, output) -> {
+                    if (displayOverride != null) {
+                        displayOverride.accept(params, output);
+                    } else {
+                        entries.forEach(s -> output.accept(s.get()));
+                    }
+                });
+
+                return builder.build();
+            });
+        // Merge explicit entries for this tab
+        List<Supplier<ItemStack>> extra = reg.explicitTabEntries.get(holder.get());
+        if (extra != null) {
+            extra.forEach(entries::add);
+        }
+
+        reg.setActiveCreativeTab(this);
+        return holder;
     }
+
 }

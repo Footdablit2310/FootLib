@@ -34,5 +34,5 @@ Add FootLib as a dependency in your mod's `neoforge.mods.toml`:
 [[dependencies.yourmod]]
 modId="footlib"
 mandatory=true
-versionRange="[1.0.0,)"
+versionRange="[0.0.0.1,1.0.0.0)"
 ```

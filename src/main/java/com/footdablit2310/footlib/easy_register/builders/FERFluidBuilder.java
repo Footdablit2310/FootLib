@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-
+import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
@@ -22,6 +22,14 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
+
+    public record FluidRegistration<S extends FlowingFluid, F extends FlowingFluid>(
+        DeferredHolder<FluidType, FluidType> type,
+        DeferredHolder<Fluid, S> source,
+        DeferredHolder<Fluid, F> flowing,
+        BaseFlowingFluid.Properties properties
+    ) {}
+
 
     private final FootEasyRegisterSystem reg;
     private final String name;
@@ -113,7 +121,7 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
     // Registration
     // -------------------------------
 
-    public void register() {
+    public FluidRegistration<S, F> register() {
 
         // 1. FluidType fallback
         if (typeFactory == null) {
@@ -136,8 +144,12 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
 
         flowing = reg.fluids.register("flowing_" + name, flowingFactory);
 
+        // 4. Create BaseFlowingFluid.Properties
+        BaseFlowingFluid.Properties props =
+                new BaseFlowingFluid.Properties(type, source, flowing);
+
         // ---------------------------------------------------------
-        // 4. Determine creative tab (fallback logic)
+        // 5. Determine creative tab (fallback logic)
         // ---------------------------------------------------------
         CreativeModeTab finalTab = creativeTab;
 
@@ -147,7 +159,7 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
         }
 
         // ---------------------------------------------------------
-        // 5. Optional fluid block
+        // 6. Optional fluid block
         // ---------------------------------------------------------
         if (makeFluidBlock) {
             fluidBlock = reg.blocks.register(name + "_fluid_block", () ->
@@ -165,7 +177,7 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
         }
 
         // ---------------------------------------------------------
-        // 6. Optional bucket item
+        // 7. Optional bucket item
         // ---------------------------------------------------------
         if (makeBucket) {
             bucket = reg.items.register(name + "_bucket", () ->
@@ -181,6 +193,10 @@ public final class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFlui
                 });
             }
         }
-    }
 
+        // ---------------------------------------------------------
+        // 8. Return the registration object
+        // ---------------------------------------------------------
+        return new FluidRegistration<S, F>(type, source, flowing, props);
+    }
 }

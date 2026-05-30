@@ -15,6 +15,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import com.footdablit2310.footlib.easy_register.builders.*;
 import java.util.function.Supplier;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
 public final class FootEasyRegisterSystem {
 
@@ -71,8 +72,8 @@ public final class FootEasyRegisterSystem {
         return new FERBlockEntityBuilder<>(this, name, factory);
     }
 
-    public <T extends MenuType<?>> FERMenuBuilder<T> menu(String name, Supplier<T> factory) {
-        return new FERMenuBuilder<>(this, name, factory);
+    public <T extends AbstractContainerMenu> FERMenuBuilder<T> menu(String name) {
+        return new FERMenuBuilder<>(this, name);
     }
 
     public FERCreativeTabBuilder creativeTab(String name) {

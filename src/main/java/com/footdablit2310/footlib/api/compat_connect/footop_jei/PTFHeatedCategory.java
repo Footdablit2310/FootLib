@@ -5,24 +5,26 @@ import com.footdablit2310.footlib.api.integration.jei.JEICategoryBuilder;
 import com.footdablit2310.footlib.api.integration.jei.JEIRecipeWrapper;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-public class PTFHeatedCategory implements mezz.jei.api.recipe.category.IRecipeCategory<JEIRecipeWrapper> {
+public class PTFHeatedCategory implements IRecipeCategory<JEIRecipeWrapper> {
 
-    
     public static final RecipeType<JEIRecipeWrapper> TYPE =
             JEICategoryBuilder.type("footorganicprocessing:ptf_heated", JEIRecipeWrapper.class);
 
     private final IDrawable background;
-    @SuppressWarnings("unused") // These are actually used by the code but the IDE doesn't recognize it.
-    private final IDrawable iconHeated; // This is actually used but the IDE doesn't recognize it.
-    @SuppressWarnings("unused") // These are actually used by the code but the IDE doesn't recognize it.
-    private final IDrawable iconSuperheated; // This is actually used but the IDE doesn't recognize it.
+    @SuppressWarnings("unused")
+    private final IDrawable iconHeated; //These are fake warnings
+    @SuppressWarnings("unused")
+    private final IDrawable iconSuperheated; //These are fake warnings
     private final IDrawable iconUltraheated;
 
     public PTFHeatedCategory(IGuiHelper guiHelper) {
@@ -59,13 +61,17 @@ public class PTFHeatedCategory implements mezz.jei.api.recipe.category.IRecipeCa
     }
 
     @Override
-    public IDrawable getBackground() {
-        return background;
+    public IDrawable getIcon() {
+        return iconUltraheated;
     }
 
+    /**
+     * JEI 1.21.x: draw background manually instead of getBackground()
+     */
     @Override
-    public IDrawable getIcon() {
-        return iconUltraheated; // default icon
+    public void draw(JEIRecipeWrapper recipe, IRecipeSlotsView slots, GuiGraphics guiGraphics,
+                     double mouseX, double mouseY) {
+        background.draw(guiGraphics);
     }
 
     @Override

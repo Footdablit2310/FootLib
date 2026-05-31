@@ -112,9 +112,7 @@ public final class FootEasyRegisterSystem {
         creativeTabLang.put(key, value);
     }
 
-    public Map<String, String> getCreativeTabLang() {
-        return creativeTabLang;
-    }
+    public Map<String, String> getCreativeTabLang() { return creativeTabLang; }
     public Map<String, String> getLangEntries() { return langEntries; }
     public Map<ResourceLocation, Block> getBlockstateEntries() { return blockstateEntries; }
     public Map<ResourceLocation, Item> getItemModelEntries() { return itemModelEntries; }
@@ -146,6 +144,9 @@ public final class FootEasyRegisterSystem {
     public void addToSpecificCreativeTab(CreativeModeTab tab, Supplier<ItemStack> stack) {
         explicitTabEntries.computeIfAbsent(tab, t -> new ArrayList<>()).add(stack);
     }
+    //------------------\
+    // Datagen          |
+    //------------------/
     public void registerLang(String key, String value) {
     langEntries.put(key, value);
     }
@@ -171,16 +172,27 @@ public final class FootEasyRegisterSystem {
         StringBuilder result = new StringBuilder();
         String[] parts = snake.split("_");
 
-        for (String part : parts) {
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
             if (part.isEmpty()) continue;
+
+            // Capitalize first letter
             result.append(Character.toUpperCase(part.charAt(0)));
+
+            // Append the rest
             if (part.length() > 1) {
                 result.append(part.substring(1));
+            }
+
+            // Add space between words
+            if (i < parts.length - 1) {
+                result.append(" ");
             }
         }
 
         return result.toString();
     }
+
 
 
 

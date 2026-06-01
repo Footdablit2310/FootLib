@@ -2,16 +2,21 @@ package com.footdablit2310.footlib.easy_register.builders;
 
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
 import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
 
@@ -26,6 +31,18 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
     private boolean enableDatagen = false;
 
     private Consumer<RecipeOutput> recipeBuilder = null;
+    private Supplier<FluidType> typeSupplier;
+    private Supplier<S> sourceSupplier;
+    private Supplier<F> flowingSupplier;
+
+    private final java.util.List<TagKey<Fluid>> fluidTags = new java.util.ArrayList<>();
+    private String customLangName = null;
+
+
+
+    public static record FluidTypeFormat() {
+        
+    }
 
     public FERFluidBuilder(FootEasyRegisterSystem reg, String name) {
         this.reg = reg;
@@ -48,55 +65,141 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         return this;
     }
 
+    public FERFluidBuilder<S, F> type(Supplier<FluidType> supplier) {
+        this.typeSupplier = supplier;
+        return this;
+    }
+
+    public FERFluidBuilder<S, F> source(Supplier<S> supplier) {
+        this.sourceSupplier = supplier;
+        return this;
+    }
+
+    public FERFluidBuilder<S, F> flowing(Supplier<F> supplier) {
+        this.flowingSupplier = supplier;
+        return this;
+    }
+
+
     public FERFluidBuilder<S, F> recipe(Consumer<RecipeOutput> builder) {
         this.recipeBuilder = builder;
         return this;
     }
 
-    public void setBucket(DeferredHolder<Item, BucketItem> bucket) {
+    public void bucketItem(DeferredHolder<Item, BucketItem> bucket) {
         this.bucketItem = bucket;
     }
 
-    public void setFluidBlock(DeferredHolder<Block, LiquidBlock> block) {
-        this.fluidBlock = block;
+    public FERFluidBuilder<S, F> tag(TagKey<Fluid> tag) {
+        this.fluidTags.add(tag);
+        return this;
     }
 
-    public void finish() {
+    public FERFluidBuilder<S, F> lang(String name) {
+        this.customLangName = name;
+        return this;
+    }
 
-        // CREATIVE TAB
-        if (addToCreativeTab) {
 
-            if (explicitTab != null) {
-                if (bucketItem != null)
-                    reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(bucketItem.get()));
-                if (fluidBlock != null)
-                    reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(fluidBlock.get()));
-            } else {
-                if (!reg.hasCreativeTab()) {
-                    throw new IllegalStateException(
-                        "Fluid '" + name + "' called .creativeTab() but no FER creative tab exists."
-                    );
+    public void setFluidBlock(DeferredHolder<Block, LiquidBlock> block) {
+            this.fluidBlock = block;
+        }
+
+        public void finish() {
+
+            // CREATIVE TAB
+            if (addToCreativeTab) {
+
+                if (explicitTab != null) {
+                    if (bucketItem != null)
+                        reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(bucketItem.get()));
+                    if (fluidBlock != null)
+                        reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(fluidBlock.get()));
+                } else {
+                    if (!reg.hasCreativeTab()) {
+                        throw new IllegalStateException(
+                            "Fluid '" + name + "' called .creativeTab() but no FER creative tab exists."
+                        );
+                    }
+
+                    if (bucketItem != null)
+                        reg.tryAddToCreativeTab(() -> new ItemStack(bucketItem.get()));
+                    if (fluidBlock != null)
+                        reg.tryAddToCreativeTab(() -> new ItemStack(fluidBlock.get()));
                 }
+            }
 
+            // DATAGEN
+            if (enableDatagen) {
                 if (bucketItem != null)
-                    reg.tryAddToCreativeTab(() -> new ItemStack(bucketItem.get()));
-                if (fluidBlock != null)
-                    reg.tryAddToCreativeTab(() -> new ItemStack(fluidBlock.get()));
+                    reg.registerItemModel(name + "_bucket", bucketItem.get());
+
+                reg.registerLang("fluid." + reg.getModId() + "." + name,
+                    FootEasyRegisterSystem.SnakeToPascalCase(name));
+            }
+
+            // RECIPE
+            if (recipeBuilder != null) {
+                reg.registerRecipe(recipeBuilder);
+            }
+
+        }
+        public FluidRegistration<S, F> register() {
+
+        // 1. Register FluidType
+        DeferredHolder<FluidType, FluidType> typeReg =
+            reg.fluidTypes.register(name, typeSupplier);
+
+        // 2. Register Source Fluid
+        DeferredHolder<Fluid, S> sourceReg =
+            reg.fluids.register(name, sourceSupplier);
+
+        DeferredHolder<Fluid, F> flowingReg =
+            reg.fluids.register(name + "_flowing", flowingSupplier);
+
+        // FLUID TAGS
+        if (!fluidTags.isEmpty()) {
+            // Apply fluid tags
+            for (TagKey<Fluid> tag : fluidTags) {
+                reg.registerFluidTag(tag, sourceReg.get());
             }
         }
 
-        // DATAGEN
-        if (enableDatagen) {
-            if (bucketItem != null)
-                reg.registerItemModel(name + "_bucket", bucketItem.get());
-
-            reg.registerLang("fluid." + reg.getModId() + "." + name,
-                FootEasyRegisterSystem.SnakeToPascalCase(name));
+        // LANG OVERRIDE
+        if (customLangName != null) {
+            reg.registerLang("fluid." + reg.getModId() + "." + name, customLangName);
         }
 
-        // RECIPE
-        if (recipeBuilder != null) {
-            reg.registerRecipe(recipeBuilder);
+        // 4. Register Bucket Item (optional)
+        if (bucketItem == null) {
+            bucketItem = reg.items.register(name + "_bucket",
+                () -> new net.minecraft.world.item.BucketItem(sourceReg.get(), new Item.Properties()
+                    .craftRemainder(Items.BUCKET)
+                    .stacksTo(1))
+            );
         }
+
+        // 5. Register Fluid Block (optional)
+        if (fluidBlock == null) {
+            fluidBlock = reg.blocks.register(name + "_fluid_block",
+                () -> new LiquidBlock(sourceReg.get(), Block.Properties.of().noLootTable()));
+        }
+
+        // 6. Finish creative tab, datagen, recipes
+        finish();
+
+        // 7. Return wrapped registration object
+        return new FluidRegistration<>(sourceReg, flowingReg, bucketItem, fluidBlock, typeReg);
     }
+
+    public static record FluidRegistration<S extends FlowingFluid, F extends FlowingFluid>(
+        DeferredHolder<Fluid, S> source,
+        DeferredHolder<Fluid, F> flowing,
+        DeferredHolder<Item, BucketItem> bucket,
+        DeferredHolder<Block, LiquidBlock> block,
+        DeferredHolder<FluidType, FluidType> type
+    ) {}
+
+
+
 }

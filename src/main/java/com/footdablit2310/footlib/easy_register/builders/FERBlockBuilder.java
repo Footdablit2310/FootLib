@@ -1,13 +1,15 @@
 package com.footdablit2310.footlib.easy_register.builders;
 
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
+
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -36,12 +38,13 @@ public class FERBlockBuilder<T extends Block> {
     }
 
     //TAGS
-    public FERBlockBuilder<T> tag(net.minecraft.tags.TagKey<Block> tag) {
+    public FERBlockBuilder<T> blockTag(TagKey<Block> tag) {
         this.blockTags.add(tag);
         return this;
     }
 
-    public FERBlockBuilder<T> itemTag(net.minecraft.tags.TagKey<net.minecraft.world.item.Item> tag) {
+
+    public FERBlockBuilder<T> itemTag(TagKey<Item> tag) {
         this.itemTags.add(tag);
         return this;
     }

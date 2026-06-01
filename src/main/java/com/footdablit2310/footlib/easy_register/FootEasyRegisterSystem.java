@@ -6,8 +6,6 @@ import com.footdablit2310.footlib.FootLib;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-//import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -22,6 +20,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.minecraft.tags.TagKey;
+
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -65,8 +65,9 @@ public final class FootEasyRegisterSystem {
     private final Map<ResourceLocation, Block> lootEntries = new HashMap<>();
 
     // Tags
-    private final java.util.Map<net.minecraft.tags.TagKey<Block>, java.util.List<Block>> blockTagEntries = new java.util.HashMap<>();
-    private final java.util.Map<net.minecraft.tags.TagKey<Item>, java.util.List<Item>> itemTagEntries = new java.util.HashMap<>();
+    private final java.util.Map<TagKey<Block>, java.util.List<Block>> blockTagEntries = new java.util.HashMap<>();
+    private final java.util.Map<TagKey<Item>, java.util.List<Item>> itemTagEntries = new java.util.HashMap<>();
+    private final java.util.Map<TagKey<Fluid>, java.util.List<Fluid>> fluidTagEntries = new java.util.HashMap<>();
     private final Map<TagKey<Block>, TagKey<Item>> copiedBlockTags = new HashMap<>();
 
     // Recipes
@@ -195,11 +196,15 @@ public final class FootEasyRegisterSystem {
         return result.toString();
     }
     
-    public void registerBlockTag(net.minecraft.tags.TagKey<Block> tag, Block block) {
+    public void registerBlockTag(TagKey<Block> tag, Block block) {
         blockTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(block);
     }
 
-    public void registerItemTag(net.minecraft.tags.TagKey<Item> tag, Item item) {
+    public void registerFluidTag(TagKey<Fluid> tag, Fluid fluid) {
+        fluidTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(fluid);
+    }
+
+    public void registerItemTag(TagKey<Item> tag, Item item) {
         itemTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(item);
     }
 

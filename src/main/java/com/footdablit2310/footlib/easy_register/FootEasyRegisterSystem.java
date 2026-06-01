@@ -6,6 +6,7 @@ import com.footdablit2310.footlib.FootLib;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 //import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -64,8 +65,9 @@ public final class FootEasyRegisterSystem {
     private final Map<ResourceLocation, Block> lootEntries = new HashMap<>();
 
     // Tags
-    //private final Map<TagKey<Block>, List<Block>> blockTags = new HashMap<>();
-    //private final Map<TagKey<Item>, List<Item>> itemTags = new HashMap<>();
+    private final java.util.Map<net.minecraft.tags.TagKey<Block>, java.util.List<Block>> blockTagEntries = new java.util.HashMap<>();
+    private final java.util.Map<net.minecraft.tags.TagKey<Item>, java.util.List<Item>> itemTagEntries = new java.util.HashMap<>();
+    private final Map<TagKey<Block>, TagKey<Item>> copiedBlockTags = new HashMap<>();
 
     // Recipes
     private final List<Consumer<RecipeOutput>> recipeEntries = new ArrayList<>();
@@ -192,9 +194,30 @@ public final class FootEasyRegisterSystem {
 
         return result.toString();
     }
+    
+    public void registerBlockTag(net.minecraft.tags.TagKey<Block> tag, Block block) {
+        blockTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(block);
+    }
 
+    public void registerItemTag(net.minecraft.tags.TagKey<Item> tag, Item item) {
+        itemTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(item);
+    }
 
+    public Map<TagKey<Block>, List<Block>> getBlockTagEntries() {
+        return blockTagEntries;
+    }
 
+    public Map<TagKey<Item>, List<Item>> getItemTagEntries() {
+        return itemTagEntries;
+    }
+
+    public void copyBlockTagToItemTag(TagKey<Block> blockTag, TagKey<Item> itemTag) {
+        copiedBlockTags.put(blockTag, itemTag);
+    }
+
+    public Map<TagKey<Block>, TagKey<Item>> getCopiedBlockTags() {
+        return copiedBlockTags;
+    }
 
     // ------------------------------------------------------------
     // ⭐ BUILDER ENTRY POINTS

@@ -1,7 +1,7 @@
 package com.footdablit2310.footlib.easy_register.datagen.tags;
 
+import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
@@ -9,18 +9,28 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.concurrent.CompletableFuture;
 
-public abstract class FERBlockTagsProvider extends BlockTagsProvider {
+public class FERBlockTagsProvider extends BlockTagsProvider {
 
-    protected FERBlockTagsProvider(PackOutput output,
-                                   CompletableFuture<HolderLookup.Provider> lookup,
-                                   String modid,
-                                   ExistingFileHelper existingFileHelper) {
-        super(output, lookup, modid, existingFileHelper);
+    private final FootEasyRegisterSystem reg;
+
+    public FERBlockTagsProvider(
+            PackOutput output,
+            CompletableFuture<HolderLookup.Provider> lookup,
+            String modid,
+            ExistingFileHelper helper,
+            FootEasyRegisterSystem reg
+    ) {
+        super(output, lookup, modid, helper);
+        this.reg = reg;
     }
 
-    /** Add a block to a tag (1.21 requires ResourceKey<Block>) */
-    protected void addTo(TagAppender<Block> app, Block block) {
-        app.add(BuiltInRegistries.BLOCK.getResourceKey(block)
-            .orElseThrow(() -> new IllegalStateException("Unregistered block: " + block)));
+    @Override
+    protected void addTags(HolderLookup.Provider provider) {
+        reg.getBlockTagEntries().forEach((tag, blocks) -> {
+            var builder = tag(tag);
+            for (Block block : blocks) {
+                builder.add(block);
+            }
+        });
     }
 }

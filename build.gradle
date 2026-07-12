@@ -26,7 +26,7 @@ sourceSets.main.resources {
 }
 
 repositories {
-    maven { url = "https://maven.blamejared.com"} // JEI
+    //maven { url = "https://maven.blamejared.com"} // JEI
     mavenCentral() // For any dependencies that are available on Maven Central, such as the Minecraft Forge maven repository mirror, or for dependencies that you publish to your own maven repository.
 }
 
@@ -102,10 +102,10 @@ dependencies {
     // And its provides the option to then use net.minecraft as the group, and one of; client, server or joined as the module name, plus the game version as version.
     // For all intends and purposes: You can treat this dependency as if it is a normal library you would use.
     // JEI API (compile only)
-    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    //compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    //compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     // JEI runtime
-    localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    //localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
     // Create, Ponder, Flywheel, and Registrate dependencies
     implementation "net.neoforged:neoforge:${neo_version}"
 

@@ -36,4 +36,4 @@ modId="footlib"
 mandatory=true
 versionRange="[0.0.0.1,1.0.0.0)"
 ```
-The newest versions are always available on modrinth.
+The newest versions are always and only available on modrinth.

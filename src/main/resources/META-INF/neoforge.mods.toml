@@ -20,22 +20,6 @@ side="BOTH"
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"
-versionRange="[21.1.219,21.1.300)"
-ordering="NONE"
-side="BOTH"
-
-# Create
-[[dependencies.${mod_id}]]
-modId="create"
-type="optional"
-versionRange="[6.0.10, 6.1.0)"
-ordering="AFTER"
-side="BOTH"
-
-# JEI(Just Enough Items)
-[[dependencies.${mod_id}]]
-modId="jei"
-type="optional"
-versionRange="[19.27.0.300,)"
+versionRange="*"
 ordering="NONE"
 side="BOTH"

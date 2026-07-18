@@ -11,9 +11,10 @@ build/
 *.ipr
 out/
 !**/src/**/out/
-
+### NeoForge ###
 .run/
-
+run/
+runs/
 ### Eclipse ###
 .apt_generated
 .classpath

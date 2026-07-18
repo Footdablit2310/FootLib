@@ -6,13 +6,10 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
-
 import org.slf4j.Logger;
 
 import com.footdablit2310.footlib.api.common.commands.FootLibModListCommand;
 import com.footdablit2310.footlib.api.common.commands.FootLibVisualizeStructureCommand;
-import com.footdablit2310.footlib.api.integration.create.CreateCompat;
-import com.footdablit2310.footlib.api.integration.jei.JEICompat;
 import com.footdablit2310.footlib.network.FootLibNetwork;
 import com.mojang.logging.LogUtils;
 
@@ -32,11 +29,6 @@ public final class FootLib {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
             FootLibVisualizeStructureCommand::register
         );
-
-        // Optional integrations
-        CreateCompat.init();
-        JEICompat.init();
-        
     }
     @SubscribeEvent
     public static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {

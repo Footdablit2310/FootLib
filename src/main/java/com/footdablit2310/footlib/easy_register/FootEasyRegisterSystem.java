@@ -5,7 +5,7 @@ import com.footdablit2310.footlib.FootLib;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -56,13 +56,13 @@ public final class FootEasyRegisterSystem {
     private final Map<String, String> langEntries = new HashMap<>();
 
     // Blockstates
-    private final Map<ResourceLocation, Block> blockstateEntries = new HashMap<>();
+    private final Map<Identifier, Block> blockstateEntries = new HashMap<>();
 
     // Item models
-    private final Map<ResourceLocation, Item> itemModelEntries = new HashMap<>();
+    private final Map<Identifier, Item> itemModelEntries = new HashMap<>();
 
     // Loot tables
-    private final Map<ResourceLocation, Block> lootEntries = new HashMap<>();
+    private final Map<Identifier, Block> lootEntries = new HashMap<>();
 
     // Tags
     private final java.util.Map<TagKey<Block>, java.util.List<Block>> blockTagEntries = new java.util.HashMap<>();
@@ -73,19 +73,18 @@ public final class FootEasyRegisterSystem {
     // Recipes
     private final List<Consumer<RecipeOutput>> recipeEntries = new ArrayList<>();
 
-
     public FootEasyRegisterSystem(String modId, IEventBus bus, String visualName) {
         this.modId = modId;
         this.visualName = visualName;
         this.LOGGER = FootLib.LOGGER;
 
-        blocks        = DeferredRegister.create(Registries.BLOCK, modId);
-        items         = DeferredRegister.create(Registries.ITEM, modId);
+        blocks = DeferredRegister.create(Registries.BLOCK, modId);
+        items = DeferredRegister.create(Registries.ITEM, modId);
         blockEntities = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, modId);
-        tabs          = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modId);
-        fluidTypes    = DeferredRegister.create(NeoForgeRegistries.FLUID_TYPES, modId);
-        fluids        = DeferredRegister.create(Registries.FLUID, modId);
-        menus         = DeferredRegister.create(Registries.MENU, modId);
+        tabs = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modId);
+        fluidTypes = DeferredRegister.create(NeoForgeRegistries.FLUID_TYPES, modId);
+        fluids = DeferredRegister.create(Registries.FLUID, modId);
+        menus = DeferredRegister.create(Registries.MENU, modId);
 
         blocks.register(bus);
         items.register(bus);
@@ -103,30 +102,47 @@ public final class FootEasyRegisterSystem {
     public String getVisualName() {
         return visualName;
     }
+
     public boolean isVisualNameUsed() {
-    return visualNameUsed;
+        return visualNameUsed;
     }
 
     public void markVisualNameUsed() {
         this.visualNameUsed = true;
     }
+
     //datagen lang
     public void registerCreativeTabLang(String key, String value) {
         creativeTabLang.put(key, value);
     }
 
-    public Map<String, String> getCreativeTabLang() { return creativeTabLang; }
-    public Map<String, String> getLangEntries() { return langEntries; }
-    public Map<ResourceLocation, Block> getBlockstateEntries() { return blockstateEntries; }
-    public Map<ResourceLocation, Item> getItemModelEntries() { return itemModelEntries; }
-    public Map<ResourceLocation, Block> getLootEntries() { return lootEntries; }
-    public List<Consumer<RecipeOutput>> getRecipeEntries() { return recipeEntries; }
+    public Map<String, String> getCreativeTabLang() {
+        return creativeTabLang;
+    }
 
+    public Map<String, String> getLangEntries() {
+        return langEntries;
+    }
+
+    public Map<Identifier, Block> getBlockstateEntries() {
+        return blockstateEntries;
+    }
+
+    public Map<Identifier, Item> getItemModelEntries() {
+        return itemModelEntries;
+    }
+
+    public Map<Identifier, Block> getLootEntries() {
+        return lootEntries;
+    }
+
+    public List<Consumer<RecipeOutput>> getRecipeEntries() {
+        return recipeEntries;
+    }
 
     // ------------------------------------------------------------
     // Active creative tab (for auto‑population)
     // ------------------------------------------------------------
-
     public void setActiveCreativeTab(FERCreativeTabBuilder tab) {
         this.activeTab = tab;
     }
@@ -134,11 +150,13 @@ public final class FootEasyRegisterSystem {
     public FERCreativeTabBuilder getActiveCreativeTab() {
         return this.activeTab;
     }
+
     public void tryAddToCreativeTab(Supplier<ItemStack> stack) {
         if (this.activeTab != null) {
             this.activeTab.add(stack);
         }
     }
+
     public boolean hasCreativeTab() {
         return this.activeTab != null;
     }
@@ -147,37 +165,43 @@ public final class FootEasyRegisterSystem {
     public void addToSpecificCreativeTab(CreativeModeTab tab, Supplier<ItemStack> stack) {
         explicitTabEntries.computeIfAbsent(tab, t -> new ArrayList<>()).add(stack);
     }
+
     //------------------\
     // Datagen          |
     //------------------/
     public void registerLang(String key, String value) {
-    langEntries.put(key, value);
+        langEntries.put(key, value);
     }
 
     public void registerBlockstate(String name, Block block) {
-        blockstateEntries.put(ResourceLocation.fromNamespaceAndPath(modId, name), block);
+        blockstateEntries.put(Identifier.fromNamespaceAndPath(modId, name), block);
     }
 
     public void registerItemModel(String name, Item item) {
-        itemModelEntries.put(ResourceLocation.fromNamespaceAndPath(modId, name), item);
+        itemModelEntries.put(Identifier.fromNamespaceAndPath(modId, name), item);
     }
 
     public void registerLoot(String name, Block block) {
-        lootEntries.put(ResourceLocation.fromNamespaceAndPath(modId, name), block);
+        lootEntries.put(Identifier.fromNamespaceAndPath(modId, name), block);
     }
 
     public void registerRecipe(Consumer<RecipeOutput> builder) {
         recipeEntries.add(builder);
     }
+
     public static String SnakeToPascalCase(String snake) {
-        if (snake == null || snake.isEmpty()) return snake;
+        if (snake == null || snake.isEmpty()) {
+            return snake;
+        }
 
         StringBuilder result = new StringBuilder();
         String[] parts = snake.split("_");
 
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
-            if (part.isEmpty()) continue;
+            if (part.isEmpty()) {
+                continue;
+            }
 
             // Capitalize first letter
             result.append(Character.toUpperCase(part.charAt(0)));
@@ -195,7 +219,7 @@ public final class FootEasyRegisterSystem {
 
         return result.toString();
     }
-    
+
     public void registerBlockTag(TagKey<Block> tag, Block block) {
         blockTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(block);
     }
@@ -227,7 +251,6 @@ public final class FootEasyRegisterSystem {
     // ------------------------------------------------------------
     // ⭐ BUILDER ENTRY POINTS
     // ------------------------------------------------------------
-
     public <T extends Block> FERBlockBuilder<T> block(String name, Supplier<T> factory) {
         return new FERBlockBuilder<>(this, name, factory);
     }

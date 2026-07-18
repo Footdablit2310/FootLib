@@ -12,7 +12,7 @@ import net.minecraft.core.registries.Registries;
 
 import net.minecraft.network.chat.Component;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import net.minecraft.server.level.ServerPlayer;
 
@@ -26,31 +26,31 @@ public final class FootLibVisualizeStructureCommand {
     public static void register(RegisterCommandsEvent event) {
 
         event.getDispatcher().register(
-            Commands.literal("visualize")
-                .then(Commands.literal("structure")
-                    .then(Commands.argument("id", ResourceLocationArgument.id())
-                        .suggests((ctx, builder) -> {
-                            Registry<Structure> reg =
-                                ctx.getSource().getLevel().registryAccess().registryOrThrow(Registries.STRUCTURE);
+                Commands.literal("visualize")
+                        .then(Commands.literal("structure")
+                                .then(Commands.argument("id", ResourceLocationArgument.id())
+                                        .suggests((ctx, builder) -> {
+                                            Registry<Structure> reg
+                                                    = ctx.getSource().getLevel().registryAccess().registryOrThrow(Registries.STRUCTURE);
 
-                            for (ResourceLocation rl : reg.keySet()) {
-                                builder.suggest(rl.toString());
-                            }
-                            return builder.buildFuture();
-                        })
-                        .then(Commands.argument("full", BoolArgumentType.bool())
-                            .executes(ctx -> execute(
-                                ctx.getSource(),
-                                ResourceLocationArgument.getId(ctx, "id"),
-                                BoolArgumentType.getBool(ctx, "full")
-                            ))
+                                            for (Identifier rl : reg.keySet()) {
+                                                builder.suggest(rl.toString());
+                                            }
+                                            return builder.buildFuture();
+                                        })
+                                        .then(Commands.argument("full", BoolArgumentType.bool())
+                                                .executes(ctx -> execute(
+                                                ctx.getSource(),
+                                                ResourceLocationArgument.getId(ctx, "id"),
+                                                BoolArgumentType.getBool(ctx, "full")
+                                        ))
+                                        )
+                                )
                         )
-                    )
-                )
         );
     }
 
-    private static int execute(CommandSourceStack src, ResourceLocation id, boolean full) {
+    private static int execute(CommandSourceStack src, Identifier id, boolean full) {
 
         ServerPlayer player = src.getPlayer();
         if (player == null) {
@@ -58,8 +58,8 @@ public final class FootLibVisualizeStructureCommand {
             return 0;
         }
 
-        Registry<Structure> reg =
-            src.getLevel().registryAccess().registryOrThrow(Registries.STRUCTURE);
+        Registry<Structure> reg
+                = src.getLevel().registryAccess().registryOrThrow(Registries.STRUCTURE);
 
         Structure structure = reg.get(id);
         if (structure == null) {
@@ -75,9 +75,9 @@ public final class FootLibVisualizeStructureCommand {
 
         BlockPos origin = bhr.getBlockPos();
 
-        src.sendSuccess(() ->
-            Component.literal("Would preview structure '" + id + "' at " + origin + " (full=" + full + ")"),
-            false
+        src.sendSuccess(()
+                -> Component.literal("Would preview structure '" + id + "' at " + origin + " (full=" + full + ")"),
+                false
         );
 
         return 1;

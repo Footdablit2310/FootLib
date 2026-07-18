@@ -169,9 +169,9 @@ public final class BasicNbtUtil {
         Map<String, String> map = new HashMap<>();
         if (!tag.contains(key)) return map;
 
-        CompoundTag mapTag = tag.getCompound(key);
+        CompoundTag mapTag = tag.getCompoundOrEmpty(key);
         for (String mapKey : mapTag.getAllKeys()) {
-            map.put(mapKey, mapTag.getString(mapKey));
+            map.put(mapKey, mapTag.getStringOr(mapKey, ""));
         }
         return map;
     }

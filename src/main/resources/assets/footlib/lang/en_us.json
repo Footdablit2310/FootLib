@@ -1,0 +1,13 @@
+{
+  "itemGroup.footlib": "Example Mod Tab",
+  "block.footlib.example_block": "Example Block",
+  "item.footlib.example_item": "Example Item",
+
+  "footlib.configuration.title": "FootLib Configs",
+  "footlib.configuration.section.footlib.common.toml": "FootLib Configs",
+  "footlib.configuration.section.footlib.common.toml.title": "FootLib Configs",
+  "footlib.configuration.items": "Item List",
+  "footlib.configuration.logDirtBlock": "Log Dirt Block",
+  "footlib.configuration.magicNumberIntroduction": "Magic Number Text",
+  "footlib.configuration.magicNumber": "Magic Number"
+}

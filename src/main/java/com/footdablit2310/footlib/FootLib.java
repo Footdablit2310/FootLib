@@ -19,7 +19,7 @@ public final class FootLib {
 
     public static final String MOD_ID = "footlib";
     public static final Logger LOGGER = LogUtils.getLogger();
-    public static DeferredHolder<CreativeModeTab, CreativeModeTab> FOOTLIB_TAB;
+    public static DeferredHolder<CreativeModeTab, CreativeModeTab> FOOTLIB_TAB; //This is the default CreativeTab
 
     public FootLib(IEventBus modBus) {
 

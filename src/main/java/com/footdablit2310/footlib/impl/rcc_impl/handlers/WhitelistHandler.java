@@ -5,6 +5,7 @@ import com.footdablit2310.footlib.FootLib;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.server.players.UserWhiteListEntry;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -23,7 +24,7 @@ public class WhitelistHandler {
             if (player != null) {
                 GameProfile profile = player.getGameProfile();
                 UserWhiteList whitelist = server.getPlayerList().getWhiteList();
-                UserWhiteListEntry entry = new UserWhiteListEntry(profile);
+                UserWhiteListEntry entry = new UserWhiteListEntry(new NameAndId(profile.id(), profile.name()));
                 whitelist.add(entry);
 
                 return new RCCResponse("success", "Player whitelisted", responseData);

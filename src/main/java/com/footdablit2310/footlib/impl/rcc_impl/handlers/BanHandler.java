@@ -9,7 +9,7 @@ import net.minecraft.server.players.UserBanList;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.slf4j.Logger;
-
+import net.minecraft.server.players.NameAndId;
 import java.util.Date;
 
 public class BanHandler {
@@ -34,9 +34,10 @@ public class BanHandler {
             }
 
             GameProfile profile = player.getGameProfile();
+            NameAndId nameAndIdObj=new NameAndId(profile.id(), profile.name());
             UserBanList banList = server.getPlayerList().getBans();
             UserBanListEntry entry = new UserBanListEntry(
-                    profile,
+                    nameAndIdObj,
                     new Date(),          // created
                     "RCC",               // source
                     null,                // expiry (null = permanent)

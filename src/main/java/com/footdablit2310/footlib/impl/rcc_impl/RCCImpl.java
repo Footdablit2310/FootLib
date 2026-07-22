@@ -5,7 +5,6 @@ import com.footdablit2310.footlib.impl.rcc_impl.handlers.*;
 
 public class RCCImpl implements RCCAPI {
 
-    @Override
     public RCCResponse execute(RCCCommand command) {
         return switch (command.getCommand()) {
             case KICK -> KickHandler.handle(command);

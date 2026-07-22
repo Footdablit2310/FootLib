@@ -1,12 +1,12 @@
 modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
-
+issueTrackerURL="https://github.com/Footdablit2310/FootLib/issues"
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
-description="Shared API library for FootDablit mods."
+description="Shared API library for Foot mods."
 
 # Required dependency: Minecraft
 [[dependencies.${mod_id}]]
@@ -39,3 +39,11 @@ type="optional"
 versionRange="[19.27.0.300,)"
 ordering="NONE"
 side="BOTH"
+
+# FootDiscordMC
+[[dependencies.${mod_id}]]
+modId="footdiscordmc"
+type="optional"
+versionRange="*"
+ordering="NONE"
+side="SERVER"

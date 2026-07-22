@@ -1,25 +1,38 @@
-modLoader="javafml"
-loaderVersion="${loader_version_range}"
 license="${mod_license}"
+
+issueTrackerURL="https://github.com/Footdablit2310/FootLib/issues"
 
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
-description="Shared API library for FootDablit mods."
 
-# Required dependency: Minecraft
-[[dependencies.${mod_id}]]
-modId="minecraft"
-mandatory=true
-versionRange="${minecraft_version_range}"
-ordering="NONE"
-side="BOTH"
+authors="Footdablit2310"
 
-# Required dependency: NeoForge
+description='''
+This Mod adds RCC system and utils
+'''
+
 [[dependencies.${mod_id}]]
 modId="neoforge"
 type="required"
 versionRange="*"
 ordering="NONE"
 side="BOTH"
+
+# Minecraft
+[[dependencies.${mod_id}]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"
+
+# FootDiscordMC
+[[dependencies.${mod_id}]]
+modId="footdiscordmc"
+type="optional"
+versionRange="*"
+ordering="NONE"
+side="SERVER"
+

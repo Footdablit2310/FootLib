@@ -5,8 +5,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
+import java.io.InvalidObjectException;
+
 public class BroadcastHandler {
-    public static RCCResponse handle(RCCCommand cmd) {
+    public static RCCResponse handle(RCCCommand cmd) throws InvalidObjectException {
+        if (!cmd.getSubcommand().isValid()) {
+            throw new InvalidObjectException("SubCommand is Invalid");
+        }
         String message = cmd.getData().get("message");
 
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();

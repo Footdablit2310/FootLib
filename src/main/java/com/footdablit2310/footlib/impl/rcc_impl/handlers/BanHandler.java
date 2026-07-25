@@ -10,13 +10,14 @@ import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.slf4j.Logger;
 
+import java.io.InvalidObjectException;
 import java.util.Date;
 
 public class BanHandler {
     // Inject your mod’s logger here
     private static final Logger LOGGER = com.footdablit2310.footlib.FootLib.LOGGER;
 
-    public static RCCResponse handle(RCCCommand cmd) {
+    public static RCCResponse handle(RCCCommand cmd) throws InvalidObjectException {
         String playerName = cmd.getData().get("player");
         String reason = cmd.getData().get("reason");
 
@@ -32,20 +33,29 @@ public class BanHandler {
                 LOGGER.warn("Attempted to ban player '{}', but they are not online and no profile could be resolved.", playerName);
                 return new RCCResponse("error", "Player not found online", responseData);
             }
-
+            if (!cmd.getSubcommand().isValid()) {
+                throw new InvalidObjectException("SubCommand is Invalid");
+            }
             GameProfile profile = player.getGameProfile();
             UserBanList banList = server.getPlayerList().getBans();
-            UserBanListEntry entry = new UserBanListEntry(
-                    profile,
-                    new Date(),          // created
-                    "RCC",               // source
-                    null,                // expiry (null = permanent)
-                    reason               // reason
-            );
-            banList.add(entry);
-
-            player.connection.disconnect(Component.literal("Banned: " + reason));
-            return new RCCResponse("success", "Player banned", responseData);
+            if (cmd.getSubcommand().name().equalsIgnoreCase("ADD")){
+                UserBanListEntry entry = new UserBanListEntry(
+                        profile,
+                        new Date(),          // created
+                        "RCC",               // source
+                        null,                // expiry (null = permanent)
+                        reason               // reason
+                );
+                banList.add(entry);
+                player.connection.disconnect(Component.literal("Banned: " + reason));
+                return new RCCResponse("success", "Player banned", responseData);
+            } else if (cmd.getSubcommand().name().equalsIgnoreCase("REMOVE")) {
+                if (banList.isBanned(profile)) {
+                    banList.remove(profile);
+                    return new RCCResponse("success", "Player unbanned", responseData);
+                }
+                return new RCCResponse("info", "Player was not in banned list", responseData);
+            }
         }
         return new RCCResponse("error", "Server not available", responseData);
     }

@@ -5,8 +5,13 @@ import com.footdablit2310.footlib.api.common.rcc_api.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
 
+import java.io.InvalidObjectException;
+
 public class KickHandler {
-    public static RCCResponse handle(RCCCommand cmd) {
+    public static RCCResponse handle(RCCCommand cmd) throws InvalidObjectException {
+        if (!cmd.getSubcommand().isValid()) {
+            throw new InvalidObjectException("SubCommand is Invalid");
+        }
         String playerName = cmd.getData().get("player");
         String reason = cmd.getData().get("reason");
 
@@ -14,7 +19,6 @@ public class KickHandler {
         Data responseData = new Data();
         responseData.put("player", playerName);
         responseData.put("reason", reason);
-
         if (player != null) {
             // Directly disconnect the player
             player.connection.disconnect(Component.literal(reason != null ? reason : "Kicked by RCC"));

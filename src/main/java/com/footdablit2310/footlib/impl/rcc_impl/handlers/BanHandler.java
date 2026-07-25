@@ -1,9 +1,11 @@
 package com.footdablit2310.footlib.impl.rcc_impl.handlers;
 
 import com.footdablit2310.footlib.api.common.rcc_api.*;
+import com.footdablit2310.footlib.impl.rcc_impl.utils.PlayerUtils;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserBanListEntry;
 import net.minecraft.server.players.UserBanList;
 import net.minecraft.server.MinecraftServer;
@@ -38,9 +40,10 @@ public class BanHandler {
             }
             GameProfile profile = player.getGameProfile();
             UserBanList banList = server.getPlayerList().getBans();
+            NameAndId nameAndId = PlayerUtils.nameAndIdFromGameProfile(profile);
             if (cmd.getSubcommand().name().equalsIgnoreCase("ADD")){
                 UserBanListEntry entry = new UserBanListEntry(
-                        profile,
+                        nameAndId,
                         new Date(),          // created
                         "RCC",               // source
                         null,                // expiry (null = permanent)
@@ -50,8 +53,8 @@ public class BanHandler {
                 player.connection.disconnect(Component.literal("Banned: " + reason));
                 return new RCCResponse("success", "Player banned", responseData);
             } else if (cmd.getSubcommand().name().equalsIgnoreCase("REMOVE")) {
-                if (banList.isBanned(profile)) {
-                    banList.remove(profile);
+                if (banList.isBanned(nameAndId)) {
+                    banList.remove(nameAndId);
                     return new RCCResponse("success", "Player unbanned", responseData);
                 }
                 return new RCCResponse("info", "Player was not in banned list", responseData);

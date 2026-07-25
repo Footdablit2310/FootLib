@@ -1,10 +1,12 @@
 package com.footdablit2310.footlib.impl.rcc_impl.handlers;
 
 import com.footdablit2310.footlib.api.common.rcc_api.*;
+import com.footdablit2310.footlib.impl.rcc_impl.utils.*;
 import com.footdablit2310.footlib.FootLib;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.server.players.UserWhiteListEntry;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -27,14 +29,15 @@ public class WhitelistHandler {
             ServerPlayer player = server.getPlayerList().getPlayerByName(playerName);
             if (player != null) {
                 GameProfile profile = player.getGameProfile();
+                NameAndId nameAndId = PlayerUtils.nameAndIdFromGameProfile(profile);
                 UserWhiteList whitelist = server.getPlayerList().getWhiteList();
                 if (cmd.getSubcommand().name().equalsIgnoreCase("ADD")) {
-                    UserWhiteListEntry entry = new UserWhiteListEntry(profile);
+                    UserWhiteListEntry entry = new UserWhiteListEntry(nameAndId);
                     whitelist.add(entry);
                     return new RCCResponse("success", "Player added to whitelist", responseData);
                 } else if (cmd.getSubcommand().name().equalsIgnoreCase("REMOVE")) {
-                    if (whitelist.isWhiteListed(profile)) {
-                        whitelist.remove(profile);
+                    if (whitelist.isWhiteListed(nameAndId)) {
+                        whitelist.remove(nameAndId);
                         return new RCCResponse("success", "Player removed from whitelist", responseData);
                     }
                     return new RCCResponse("info", "Player was not in whitelist", responseData);

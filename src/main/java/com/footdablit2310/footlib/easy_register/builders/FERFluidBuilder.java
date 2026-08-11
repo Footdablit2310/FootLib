@@ -219,7 +219,15 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         DeferredHolder<Item, BucketItem> bucket,
         DeferredHolder<Block, LiquidBlock> block,
         DeferredHolder<FluidType, FluidType> type
-    ) {}
+    ) {
+        public BaseFlowingFluid.Properties createDefaultBaseFlowingFluidProperty() {
+            return new BaseFlowingFluid.Properties(
+                    this.type(),
+                    this.source(),
+                    this.flowing()
+            );
+        }
+    }
     public record FluidProperties(
             FluidType.Properties fluidTypeProperties,
             BaseFlowingFluid.Properties sourceProperties,

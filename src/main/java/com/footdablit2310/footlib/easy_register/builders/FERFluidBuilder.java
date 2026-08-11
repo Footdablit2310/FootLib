@@ -12,6 +12,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
@@ -74,6 +75,13 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
 
     public FERFluidBuilder<S, F> flowing(Supplier<F> supplier) {
         this.flowingSupplier = supplier;
+        return this;
+    }
+    @SuppressWarnings("unchecked")
+    public FERFluidBuilder<S, F> createTypesFromProperties(FluidProperties fluidProperties) {
+        this.typeSupplier = () -> new FluidType(fluidProperties.fluidTypeProperties);
+        this.sourceSupplier = () -> (S) new BaseFlowingFluid.Source(fluidProperties.sourceProperties);
+        this.flowingSupplier = () -> (F) new BaseFlowingFluid.Flowing(fluidProperties.flowingProperties);
         return this;
     }
 
@@ -208,5 +216,18 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         DeferredHolder<Block, LiquidBlock> block,
         DeferredHolder<FluidType, FluidType> type
     ) {}
+    public record FluidProperties(
+            FluidType.Properties fluidTypeProperties,
+            BaseFlowingFluid.Properties sourceProperties,
+            BaseFlowingFluid.Properties flowingProperties
+    ) {
+        /*
+        Use this to make a FluidProperties Type without having to duplicate code for source and flowing.
+        If you want to use a different Source and Flowing Property then use the record constructor instead.
+         */
+        public static FluidProperties createPropertySimple(BaseFlowingFluid.Properties sourceAndFlowingProperties, FluidType.Properties fluidTypeProperties) {
+            return new FluidProperties(fluidTypeProperties, sourceAndFlowingProperties, sourceAndFlowingProperties);
+        }
+    }
 
 }

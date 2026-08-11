@@ -229,7 +229,7 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         Use this to make a FluidProperties Type without having to duplicate code for source and flowing.
         If you want to use a different Source and Flowing Property then use the record constructor instead.
          */
-        public static FluidProperties createPropertySimple(BaseFlowingFluid.Properties sourceAndFlowingProperties, FluidType.Properties fluidTypeProperties) {
+        public static FluidProperties createPropertySimple(FluidType.Properties fluidTypeProperties, BaseFlowingFluid.Properties sourceAndFlowingProperties) {
             return new FluidProperties(fluidTypeProperties, sourceAndFlowingProperties, sourceAndFlowingProperties);
         }
     }

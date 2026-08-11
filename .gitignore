@@ -33,7 +33,8 @@ bin/
 .DS_Store
 
 ### Minecraft Modding ###
-# removed: runs/
+# removed: 
+runs/
 !**/src/**/runs/
 **/src/generated/**/.cache/
 repo/

@@ -83,11 +83,13 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         return this;
     }
 
-    public void customBucketItem(DeferredHolder<Item, BucketItem> bucket) {
+    public FERFluidBuilder<S, F> customBucketItem(DeferredHolder<Item, BucketItem> bucket) {
         this.bucketItem = bucket;
+        return this;
     }
-    public void bucketItem() {
+    public FERFluidBuilder<S, F> bucketItem() {
         this.addBucketItem=true;
+        return this;
     }
 
     public FERFluidBuilder<S, F> tag(TagKey<Fluid> tag) {
@@ -100,14 +102,15 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         return this;
     }
 
-    public void setCustomFluidBlock(DeferredHolder<Block, LiquidBlock> block) {
-            this.fluidBlock = block;
+    public FERFluidBuilder<S, F> setCustomFluidBlock(DeferredHolder<Block, LiquidBlock> block) {
+        this.fluidBlock = block;
+        return this;
     }
-    public void setFluidBlock() {
+    public FERFluidBuilder<S, F> setFluidBlock() {
         this.addFluidBlock=true;
+        return this;
     }
-
-    public void finish() {
+    private void finish() {
 
         // CREATIVE TAB
         if (addToCreativeTab) {

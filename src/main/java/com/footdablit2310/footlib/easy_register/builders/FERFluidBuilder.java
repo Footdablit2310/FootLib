@@ -78,7 +78,7 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         return this;
     }
     @SuppressWarnings("unchecked")
-    public FERFluidBuilder<S, F> createTypesFromProperties(FluidProperties fluidProperties) {
+    public FERFluidBuilder<S, F> createFromProperties(FluidProperties fluidProperties) {
         this.typeSupplier = () -> new FluidType(fluidProperties.fluidTypeProperties);
         this.sourceSupplier = () -> (S) new BaseFlowingFluid.Source(fluidProperties.sourceProperties);
         this.flowingSupplier = () -> (F) new BaseFlowingFluid.Flowing(fluidProperties.flowingProperties);

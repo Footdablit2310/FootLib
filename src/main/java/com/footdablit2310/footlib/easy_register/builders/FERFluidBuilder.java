@@ -77,11 +77,15 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         this.flowingSupplier = supplier;
         return this;
     }
-    @SuppressWarnings("unchecked")
+    /*
+    Use this to make a Fluid with only FluidType and BaseFlowingFluid.
+    This uses the record FluidProperties to get the properties.
+     */
+    @SuppressWarnings("unchecked") // The SuppressWarnings is here so that IntelliJ is happy.
     public FERFluidBuilder<S, F> createFromProperties(FluidProperties fluidProperties) {
         this.typeSupplier = () -> new FluidType(fluidProperties.fluidTypeProperties);
-        this.sourceSupplier = () -> (S) new BaseFlowingFluid.Source(fluidProperties.sourceProperties);
-        this.flowingSupplier = () -> (F) new BaseFlowingFluid.Flowing(fluidProperties.flowingProperties);
+        this.sourceSupplier = () -> (S) new BaseFlowingFluid.Source(fluidProperties.sourceProperties); // The cast is here so that IntelliJ is happy.
+        this.flowingSupplier = () -> (F) new BaseFlowingFluid.Flowing(fluidProperties.flowingProperties); // The  cast is here so that IntelliJ is happy.
         return this;
     }
 

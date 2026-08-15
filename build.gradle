@@ -29,7 +29,6 @@ repositories {
     maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
     maven { url = "https://maven.ithundxr.dev/snapshots" } // Registrate
     maven { url = "https://maven.blamejared.com"} // JEI
-    mavenCentral() // For any dependencies that are available on Maven Central, such as the Minecraft Forge maven repository mirror, or for dependencies that you publish to your own maven repository.
 }
 
 base {
@@ -142,19 +141,92 @@ tasks.withType(ProcessResources).configureEach {
     }
 }
 
-// Example configuration to allow publishing using the maven-publish plugin
-publishing {
-    publications {
-        register('mavenJava', MavenPublication) {
-            from components.java
-        }
+tasks.register("publishToModrinth") {
+    group = "publishing"
+    description = "Builds the mod and uploads it to Modrinth"
+
+    def changelog = project.findProperty("changelog")
+    if (changelog == null || changelog.trim().isEmpty()) {
+        throw new GradleException("No changelog provided. Use -Pchangelog=\"your text\"")
     }
-    repositories {
-        maven {
-            url "file://${project.projectDir}/repo"
+    // Run the build first so the JAR exists
+    dependsOn("build")
+
+    doLast {
+        // Find the built JAR in build/libs
+        def jarFile = file("build/libs").listFiles().find { it.name.endsWith(".jar") }
+        if (!jarFile) throw new GradleException("No JAR found in build/libs")
+
+        println "Uploading: ${jarFile.name}"
+
+        // Read Modrinth API token from environment
+        def token = System.getenv("MODRINTH_TOKEN")
+        if (!token) throw new GradleException("Missing MODRINTH_TOKEN env variable")
+
+        // Open Modrinth API connection
+        def apiUrl = new URL("https://api.modrinth.com/v2/version")
+        HttpURLConnection conn = (HttpURLConnection) apiUrl.openConnection()
+        conn.setRequestMethod("POST")
+        conn.setDoOutput(true)
+        conn.setRequestProperty("Authorization", "Bearer " + token)
+
+        // Multipart boundary required by Modrinth API
+        def boundary = "----GradleBoundary" + System.currentTimeMillis()
+        conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary)
+
+        def output = conn.outputStream
+
+        // JSON metadata (cannot contain comments!)
+        def modVersion = project.findProperty("mod_version")
+        def versionType = modVersion.contains("-")
+                ? modVersion.substring(modVersion.lastIndexOf("-") + 1)
+                : "release"
+        def metadata = """
+        {
+          "project_id": "YOUR_PROJECT_ID",
+          "version_number": "${mod_version}",
+          "name": "${mod_name}-${mod_version}",
+          "changelog": "${changelog.toString()}",
+          "game_versions": ["1.21.1"],
+          "version_type": "${versionType}",
+          "loaders": ["neoforge"],
+          "featured": true,
+          "status": "listed",
+          "file_parts": ["file"]
+        }
+        """.trim()
+
+        // Write JSON part
+        output.write(("--$boundary\r\n").bytes)
+        output.write("Content-Disposition: form-data; name=\"data\"\r\n".bytes)
+        output.write("Content-Type: application/json\r\n\r\n".bytes)
+        output.write(metadata.bytes)
+        output.write("\r\n".bytes)
+
+        // Write file part
+        output.write(("--$boundary\r\n").bytes)
+        output.write("Content-Disposition: form-data; name=\"file\"; filename=\"${jarFile.name}\"\r\n".bytes)
+        output.write("Content-Type: application/java-archive\r\n\r\n".bytes)
+        Files.copy(jarFile.toPath(), output)
+        output.write("\r\n".bytes)
+
+        // End boundary
+        output.write(("--$boundary--\r\n").bytes)
+        output.flush()
+
+        // Read response
+        def responseCode = conn.responseCode
+        def responseText = conn.inputStream.text
+
+        println "Modrinth response ($responseCode):"
+        println responseText
+
+        if (responseCode !in 200..299) {
+            throw new GradleException("Upload failed: $responseText")
         }
     }
 }
+
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation

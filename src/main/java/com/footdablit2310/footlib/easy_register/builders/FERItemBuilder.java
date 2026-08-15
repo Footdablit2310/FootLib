@@ -68,14 +68,14 @@ public class FERItemBuilder<T extends Item> {
         // CREATIVE TAB
         if (addToCreativeTab) {
             if (explicitTab != null) {
-                reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(holder.get()));
+                reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(holder));
             } else {
                 if (!reg.hasCreativeTab()) {
                     throw new IllegalStateException(
                         "Item '" + name + "' called .creativeTab() but no FER creative tab exists."
                     );
                 }
-                reg.tryAddToCreativeTab(() -> new ItemStack(holder.get()));
+                reg.tryAddToCreativeTab(() -> new ItemStack(holder));
             }
         }
 
@@ -83,7 +83,7 @@ public class FERItemBuilder<T extends Item> {
         if (enableDatagen) {
             reg.registerItemModel(name, holder.get());
             reg.registerLang(holder.get().getDescriptionId(),
-                FootEasyRegisterSystem.SnakeToPascalCase(name));
+                FootEasyRegisterSystem.SnakeToNormalCase(name));
         }
 
         // RECIPE

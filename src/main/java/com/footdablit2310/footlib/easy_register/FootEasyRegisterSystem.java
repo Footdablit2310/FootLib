@@ -1,10 +1,8 @@
 package com.footdablit2310.footlib.easy_register;
 
-import com.footdablit2310.footlib.FootLibRegistries;
 import com.footdablit2310.footlib.easy_register.builders.*;
 import com.footdablit2310.footlib.FootLib;
 
-import com.footdablit2310.footlib.multiblock.IMultiblockType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -43,8 +41,6 @@ public final class FootEasyRegisterSystem {
     public final DeferredRegister<FluidType> fluidTypes;
     public final DeferredRegister<Fluid> fluids;
     public final DeferredRegister<MenuType<?>> menus;
-
-    public final DeferredRegister<IMultiblockType> multiblockTypes;
 
     private final String modId;
     private final String visualName;
@@ -90,7 +86,6 @@ public final class FootEasyRegisterSystem {
         fluidTypes    = DeferredRegister.create(NeoForgeRegistries.FLUID_TYPES, modId);
         fluids        = DeferredRegister.create(Registries.FLUID, modId);
         menus         = DeferredRegister.create(Registries.MENU, modId);
-        multiblockTypes = DeferredRegister.create(FootLibRegistries.MULTIBLOCK_TYPE_KEY, modId);
 
         blocks.register(bus);
         items.register(bus);
@@ -99,7 +94,6 @@ public final class FootEasyRegisterSystem {
         fluidTypes.register(bus);
         fluids.register(bus);
         menus.register(bus);
-        multiblockTypes.register(bus);
     }
 
     public String getModId() {
@@ -133,8 +127,9 @@ public final class FootEasyRegisterSystem {
     // Active creative tab (for auto‑population)
     // ------------------------------------------------------------
 
-    public void setActiveCreativeTab(FERCreativeTabBuilder tab) {
+    public FERCreativeTabBuilder setActiveCreativeTab(FERCreativeTabBuilder tab) {
         this.activeTab = tab;
+        return this.activeTab;
     }
 
     public FERCreativeTabBuilder getActiveCreativeTab() {
@@ -175,7 +170,7 @@ public final class FootEasyRegisterSystem {
     public void registerRecipe(Consumer<RecipeOutput> builder) {
         recipeEntries.add(builder);
     }
-    public static String SnakeToPascalCase(String snake) {
+    public static String SnakeToNormalCase(String snake) {
         if (snake == null || snake.isEmpty()) return snake;
 
         StringBuilder result = new StringBuilder();
@@ -259,8 +254,5 @@ public final class FootEasyRegisterSystem {
 
     public <S extends FlowingFluid, F extends FlowingFluid> FERFluidBuilder<S, F> fluid(String name) {
         return new FERFluidBuilder<>(this, name);
-    }
-    public <T extends IMultiblockType> FERMultiBlockBuilder<T> multiblock(String name) {
-        return new FERMultiBlockBuilder<>(this, name);
     }
 }

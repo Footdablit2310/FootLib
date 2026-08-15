@@ -2,6 +2,7 @@ package com.footdablit2310.footlib.easy_register.builders;
 
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
 
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.flag.FeatureFlags;
@@ -17,6 +18,8 @@ public final class FERMenuBuilder<T extends AbstractContainerMenu> {
     private Object constructor; // MenuSupplier<T> OR IContainerFactory<T>
 
     private DeferredHolder<MenuType<?>, MenuType<T>> holder;
+
+    private FeatureFlagSet featureFlags = FeatureFlags.DEFAULT_FLAGS;
 
     public FERMenuBuilder(FootEasyRegisterSystem reg, String name) {
         this.reg = reg;
@@ -35,9 +38,17 @@ public final class FERMenuBuilder<T extends AbstractContainerMenu> {
         return this;
     }
 
+    /**
+     * This allows you to set your FeatureFlags before construction.
+     */
+    public FERMenuBuilder<T> setFeatureFlags(FeatureFlagSet featureFlags){
+        this.featureFlags = featureFlags;
+        return this;
+    }
+
     /** Register MenuType<T> */
     @SuppressWarnings("unchecked")
-    public MenuType<T> register() {
+    public DeferredHolder<MenuType<?>, MenuType<T>> register() {
         if (constructor == null) {
             throw new IllegalStateException("Menu '" + name + "' is missing a supplier() or factory()");
         }
@@ -45,11 +56,11 @@ public final class FERMenuBuilder<T extends AbstractContainerMenu> {
         holder = reg.menus.register(name, () ->
             new MenuType<>(
                 (MenuType.MenuSupplier<T>) constructor,
-                FeatureFlags.VANILLA_SET
+                this.featureFlags
             )
         );
 
-        return holder.get();
+        return holder;
     }
 
     public DeferredHolder<MenuType<?>, MenuType<T>> holder() {

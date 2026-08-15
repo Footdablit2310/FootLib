@@ -114,7 +114,7 @@ public class FERBlockBuilder<T extends Block> {
             reg.registerBlockstate(name, holder.get());
             reg.registerLoot(name, holder.get());
             reg.registerLang(holder.get().getDescriptionId(),
-                FootEasyRegisterSystem.SnakeToPascalCase(name));
+                FootEasyRegisterSystem.SnakeToNormalCase(name));
 
             // Item model only if item exists
             if (createSimpleItem) {

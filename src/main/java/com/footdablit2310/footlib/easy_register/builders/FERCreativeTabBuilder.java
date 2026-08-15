@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -67,12 +68,12 @@ public final class FERCreativeTabBuilder {
     }
 
     public FERCreativeTabBuilder before(ResourceLocation... tabs) {
-        for (var t : tabs) beforeTabs.add(t);
+        beforeTabs.addAll(Arrays.asList(tabs));
         return this;
     }
 
     public FERCreativeTabBuilder after(ResourceLocation... tabs) {
-        for (var t : tabs) afterTabs.add(t);
+        afterTabs.addAll(Arrays.asList(tabs));
         return this;
     }
 
@@ -181,7 +182,7 @@ public final class FERCreativeTabBuilder {
         // Merge explicit entries for this tab
         List<Supplier<ItemStack>> extra = reg.explicitTabEntries.get(holder.get());
         if (extra != null) {
-            extra.forEach(entries::add);
+            entries.addAll(extra);
         }
 
         reg.setActiveCreativeTab(this);

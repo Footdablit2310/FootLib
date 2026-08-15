@@ -1,0 +1,10 @@
+﻿{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "footlib:CascadiaMono-LightItalic.ttf",
+      "size": 12,
+      "oversample": 2
+    }
+  ]
+}

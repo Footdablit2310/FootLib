@@ -3,6 +3,7 @@ package com.footdablit2310.footlib.easy_register;
 import com.footdablit2310.footlib.easy_register.builders.*;
 import com.footdablit2310.footlib.FootLib;
 
+import com.footdablit2310.footlib.easy_register.types.ScreenRegistration;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -41,6 +42,8 @@ public final class FootEasyRegisterSystem {
     public final DeferredRegister<FluidType> fluidTypes;
     public final DeferredRegister<Fluid> fluids;
     public final DeferredRegister<MenuType<?>> menus;
+
+    public final Map<MenuType<?>, ScreenRegistration> screens = new HashMap<>();
 
     private final String modId;
     private final String visualName;
@@ -254,5 +257,9 @@ public final class FootEasyRegisterSystem {
 
     public <S extends FlowingFluid, F extends FlowingFluid> FERFluidBuilder<S, F> fluid(String name) {
         return new FERFluidBuilder<>(this, name);
+    }
+
+    public void addScreen(ScreenRegistration reg) {
+        screens.put(reg.menuType(), reg);
     }
 }

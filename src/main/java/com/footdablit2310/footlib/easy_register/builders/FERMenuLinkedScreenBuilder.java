@@ -3,35 +3,33 @@ package com.footdablit2310.footlib.easy_register.builders;
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
 import com.footdablit2310.footlib.easy_register.types.ScreenRegistration;
 import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 
-public final class FERScreenBuilder<M extends AbstractContainerMenu, S extends Screen & MenuAccess<M>> {
+public final class FERMenuLinkedScreenBuilder<ETACM extends AbstractContainerMenu> {
 
     private final FootEasyRegisterSystem reg;
-    private final MenuType<M> menuType;
+    private final MenuType<ETACM> menuType;
 
-    private MenuScreens.ScreenConstructor<M, S> factory;
+    private MenuScreens.ScreenConstructor<?, ?> factory;
 
-    public FERScreenBuilder(FootEasyRegisterSystem reg, MenuType<M> menuType) {
+    public FERMenuLinkedScreenBuilder(FootEasyRegisterSystem reg, MenuType<ETACM> menuType) {
         this.reg = reg;
         this.menuType = menuType;
     }
 
-    public FERScreenBuilder<M, S> factory(MenuScreens.ScreenConstructor<M, S> factory) {
+    public FERMenuLinkedScreenBuilder<ETACM> factory(MenuScreens.ScreenConstructor<ETACM, ? extends MenuAccess<ETACM>>factory) {
         this.factory = factory;
         return this;
     }
 
-    public ScreenRegistration build() {
+    public ScreenRegistration<ETACM> build() {
         if (factory == null)
             throw new IllegalStateException("Screen builder missing factory()");
 
-        ScreenRegistration registration =
-                new ScreenRegistration(menuType, factory);
+        ScreenRegistration<ETACM> registration =
+                new ScreenRegistration<ETACM>(menuType, factory);
 
         reg.addScreen(registration);
         return registration;

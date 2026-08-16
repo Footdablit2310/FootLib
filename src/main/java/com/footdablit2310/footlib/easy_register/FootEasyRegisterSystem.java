@@ -2,10 +2,13 @@ package com.footdablit2310.footlib.easy_register;
 
 import com.footdablit2310.footlib.easy_register.builders.*;
 import com.footdablit2310.footlib.FootLib;
+import com.footdablit2310.footlib.easy_register.config.TabConfig;
 
 import com.footdablit2310.footlib.easy_register.types.ScreenRegistration;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -18,6 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -25,10 +29,7 @@ import net.minecraft.tags.TagKey;
 
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -43,14 +44,22 @@ public final class FootEasyRegisterSystem {
     public final DeferredRegister<Fluid> fluids;
     public final DeferredRegister<MenuType<?>> menus;
 
-    public final Map<MenuType<?>, ScreenRegistration> screens = new HashMap<>();
+    public final Map<MenuType<? extends AbstractContainerMenu>, ScreenRegistration<? extends AbstractContainerMenu>> screens = new HashMap<>();
 
     private final String modId;
     private final String visualName;
 
-    // active creative tab for auto‑add from builders
-    private FERCreativeTabBuilder activeTab;
-    private boolean visualNameUsed = false;
+    // STRICT: Removed activeTab, visualNameUsed, explicitTabEntries.
+    // These violated SRP by making the registry system stateful per-tab.
+
+    // Deferred entries for CUSTOM tabs (keyed by registration name).
+    // Entries are merged at registerCreativeTab() time, NOT lazily in a lambda.
+    private final Map<String, List<Supplier<ItemStack>>> customTabEntries = new HashMap<>();
+
+    // Deferred entries for EXISTING tabs (vanilla/mod).
+    // Applied during BuildCreativeModeTabContentsEvent.
+    private final Map<ResourceKey<CreativeModeTab>, List<Supplier<ItemStack>>> existingTabEntries = new HashMap<>();
+
     public Logger LOGGER;
 
     //lang datagen
@@ -97,6 +106,9 @@ public final class FootEasyRegisterSystem {
         fluidTypes.register(bus);
         fluids.register(bus);
         menus.register(bus);
+
+        // STRICT: Subscribe to creative tab contents event for existing tabs.
+        bus.addListener(this::onBuildContents);
     }
 
     public String getModId() {
@@ -106,13 +118,10 @@ public final class FootEasyRegisterSystem {
     public String getVisualName() {
         return visualName;
     }
-    public boolean isVisualNameUsed() {
-    return visualNameUsed;
-    }
 
-    public void markVisualNameUsed() {
-        this.visualNameUsed = true;
-    }
+    // STRICT: Removed isVisualNameUsed() / markVisualNameUsed().
+    // visualName is now just a default string, not a consumable resource.
+
     //datagen lang
     public void registerCreativeTabLang(String key, String value) {
         creativeTabLang.put(key, value);
@@ -126,36 +135,90 @@ public final class FootEasyRegisterSystem {
     public List<Consumer<RecipeOutput>> getRecipeEntries() { return recipeEntries; }
 
 
+    // -- STRICT: Removed active tab state (activeTab, setActiveCreativeTab, etc.) --
+    // Builders no longer mutate the registry system. Use explicit defer/add methods.
+
     // ------------------------------------------------------------
-    // Active creative tab (for auto‑population)
+    // STRICT: Creative Tab Registration
     // ------------------------------------------------------------
 
-    public FERCreativeTabBuilder setActiveCreativeTab(FERCreativeTabBuilder tab) {
-        this.activeTab = tab;
-        return this.activeTab;
-    }
-
-    public FERCreativeTabBuilder getActiveCreativeTab() {
-        return this.activeTab;
-    }
-    public void tryAddToCreativeTab(Supplier<ItemStack> stack) {
-        if (this.activeTab != null) {
-            this.activeTab.add(stack);
+    /**
+     * Register a custom creative tab from an immutable config.
+     * Deferred entries for this tab name are merged BEFORE the registry lambda is captured,
+     * preventing DeferredHolder.get() misuse and lambda capture bugs.
+     */
+    public Supplier<CreativeModeTab> registerCreativeTab(TabConfig config) {
+        // Auto-register lang for translatable titles.
+        if (config.title().getContents() instanceof TranslatableContents tc) {
+            String key = tc.getKey();
+            String value = (this.visualName != null && !this.visualName.isBlank())
+                    ? this.visualName
+                    : SnakeToNormalCase(config.name());
+            creativeTabLang.put(key, value);
         }
-    }
-    public boolean hasCreativeTab() {
-        return this.activeTab != null;
-    }
-    public final Map<CreativeModeTab, List<Supplier<ItemStack>>> explicitTabEntries = new HashMap<>();
 
-    public void addToSpecificCreativeTab(CreativeModeTab tab, Supplier<ItemStack> stack) {
-        explicitTabEntries.computeIfAbsent(tab, t -> new ArrayList<>()).add(stack);
+        // STRICT: Merge deferred entries BEFORE the lambda captures them.
+        List<Supplier<ItemStack>> entries = new ArrayList<>(
+                customTabEntries.getOrDefault(config.name(), List.of())
+        );
+
+        return tabs.register(config.name(), () -> {
+            CreativeModeTab.Builder builder = CreativeModeTab.builder()
+                    .title(config.title())
+                    .icon(config.icon());
+
+            if (config.searchBar()) {
+                builder = builder.withSearchBar(config.searchBarWidth());
+            }
+            if (!config.beforeTabs().isEmpty()) {
+                builder = builder.withTabsBefore(config.beforeTabs().toArray(ResourceLocation[]::new));
+            }
+            if (!config.afterTabs().isEmpty()) {
+                builder = builder.withTabsAfter(config.afterTabs().toArray(ResourceLocation[]::new));
+            }
+
+            builder = builder.displayItems((params, output) -> {
+                if (config.displayGenerator() != null) {
+                    config.displayGenerator().accept(params, output);
+                }
+                entries.forEach(s -> output.accept(s.get()));
+            });
+
+            return builder.build();
+        });
     }
+
+    /**
+     * Defer an item to a CUSTOM tab (by registration name).
+     * MUST be called BEFORE registerCreativeTab() for that name.
+     */
+    public void addToTab(String tabName, Supplier<ItemStack> entry) {
+        customTabEntries.computeIfAbsent(tabName, k -> new ArrayList<>()).add(entry);
+    }
+
+    /**
+     * Defer an item to an EXISTING tab (vanilla or another mod).
+     * Applied during BuildCreativeModeTabContentsEvent.
+     */
+    public void addToExistingTab(ResourceKey<CreativeModeTab> tabKey, Supplier<ItemStack> entry) {
+        existingTabEntries.computeIfAbsent(tabKey, k -> new ArrayList<>()).add(entry);
+    }
+
+    /**
+     * NeoForge event handler for populating existing creative tabs.
+     */
+    private void onBuildContents(BuildCreativeModeTabContentsEvent event) {
+        List<Supplier<ItemStack>> entries = existingTabEntries.get(event.getTabKey());
+        if (entries == null) return;
+
+        entries.forEach(s -> event.accept(s.get()));
+    }
+
     //------------------\
     // Datagen          |
     //------------------/
     public void registerLang(String key, String value) {
-    langEntries.put(key, value);
+        langEntries.put(key, value);
     }
 
     public void registerBlockstate(String name, Block block) {
@@ -199,7 +262,7 @@ public final class FootEasyRegisterSystem {
 
         return result.toString();
     }
-    
+
     public void registerBlockTag(TagKey<Block> tag, Block block) {
         blockTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(block);
     }
@@ -251,15 +314,39 @@ public final class FootEasyRegisterSystem {
         return new FERMenuBuilder<>(this, name);
     }
 
+    /**
+     * STRICT: Returns a pure builder. Call .build() to get TabConfig,
+     * then pass it to registerCreativeTab().
+     *
+     * NOTE: FERCreativeTabBuilder constructor must be updated to
+     * FERCreativeTabBuilder(String name) — no FootEasyRegisterSystem param.
+     */
     public FERCreativeTabBuilder creativeTab(String name) {
-        return new FERCreativeTabBuilder(this, name);
+        return new FERCreativeTabBuilder(name);
     }
 
     public <S extends FlowingFluid, F extends FlowingFluid> FERFluidBuilder<S, F> fluid(String name) {
         return new FERFluidBuilder<>(this, name);
     }
-
-    public void addScreen(ScreenRegistration reg) {
-        screens.put(reg.menuType(), reg);
+    public Map<MenuType<? extends AbstractContainerMenu>, ScreenRegistration<? extends AbstractContainerMenu>> getScreens() {
+        return this.screens;
+    }
+    public ScreenRegistration<? extends AbstractContainerMenu> getScreen(
+            MenuType<? extends AbstractContainerMenu> menuType) throws IllegalArgumentException{
+        ScreenRegistration<?> screen = this.screens.get(menuType);
+        if (screen == null) {
+            throw new IllegalArgumentException(
+                    "No ScreenRegistration found for MenuType: " + menuType
+                            + ". This error may be caused by Mixin or FootEasyRegisterSystem.java:addScreen "
+                            + "has not been run or duplicate FER instances."
+            );
+        }
+        return screen;
+    }
+    public void addScreen(ScreenRegistration<? extends AbstractContainerMenu> reg) {
+        this.screens.put(reg.menuType(), reg);
+    }
+    public <ETACM extends AbstractContainerMenu> FERMenuLinkedScreenBuilder<ETACM> screenBuilder(MenuType<ETACM> menuType) {
+        return new FERMenuLinkedScreenBuilder<>(this, menuType);
     }
 }

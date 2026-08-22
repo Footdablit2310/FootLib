@@ -5,6 +5,8 @@ import com.footdablit2310.footlib.FootLib;
 import com.footdablit2310.footlib.easy_register.config.TabConfig;
 
 import com.footdablit2310.footlib.easy_register.types.ScreenRegistration;
+import com.footdablit2310.footlib.registry.custom.multiblock.CustomMultiblockRegistryKeys;
+import com.footdablit2310.footlib.registry.custom.multiblock.MultiblockRegistryData;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -43,6 +45,8 @@ public final class FootEasyRegisterSystem {
     public final DeferredRegister<FluidType> fluidTypes;
     public final DeferredRegister<Fluid> fluids;
     public final DeferredRegister<MenuType<?>> menus;
+
+    public final DeferredRegister<MultiblockRegistryData<?>> multiblocks;
 
     public final Map<MenuType<? extends AbstractContainerMenu>, ScreenRegistration<? extends AbstractContainerMenu>> screens = new HashMap<>();
 
@@ -98,6 +102,7 @@ public final class FootEasyRegisterSystem {
         fluidTypes    = DeferredRegister.create(NeoForgeRegistries.FLUID_TYPES, modId);
         fluids        = DeferredRegister.create(Registries.FLUID, modId);
         menus         = DeferredRegister.create(Registries.MENU, modId);
+        multiblocks   = DeferredRegister.create(CustomMultiblockRegistryKeys.MULTIBLOCK_REGISTRY_KEY, modId);
 
         blocks.register(bus);
         items.register(bus);
@@ -106,6 +111,7 @@ public final class FootEasyRegisterSystem {
         fluidTypes.register(bus);
         fluids.register(bus);
         menus.register(bus);
+        multiblocks.register(bus);
 
         // STRICT: Subscribe to creative tab contents event for existing tabs.
         bus.addListener(this::onBuildContents);
@@ -134,10 +140,6 @@ public final class FootEasyRegisterSystem {
     public Map<ResourceLocation, Block> getLootEntries() { return lootEntries; }
     public List<Consumer<RecipeOutput>> getRecipeEntries() { return recipeEntries; }
 
-
-    // -- STRICT: Removed active tab state (activeTab, setActiveCreativeTab, etc.) --
-    // Builders no longer mutate the registry system. Use explicit defer/add methods.
-
     // ------------------------------------------------------------
     // STRICT: Creative Tab Registration
     // ------------------------------------------------------------
@@ -156,8 +158,6 @@ public final class FootEasyRegisterSystem {
                     : SnakeToNormalCase(config.name());
             creativeTabLang.put(key, value);
         }
-
-        // STRICT: Merge deferred entries BEFORE the lambda captures them.
         List<Supplier<ItemStack>> entries = new ArrayList<>(
                 customTabEntries.getOrDefault(config.name(), List.of())
         );
@@ -291,10 +291,6 @@ public final class FootEasyRegisterSystem {
         return copiedBlockTags;
     }
 
-    // ------------------------------------------------------------
-    // ⭐ BUILDER ENTRY POINTS
-    // ------------------------------------------------------------
-
     public <T extends Block> FERBlockBuilder<T> block(String name, Supplier<T> factory) {
         return new FERBlockBuilder<>(this, name, factory);
     }
@@ -312,17 +308,6 @@ public final class FootEasyRegisterSystem {
 
     public <T extends AbstractContainerMenu> FERMenuBuilder<T> menu(String name) {
         return new FERMenuBuilder<>(this, name);
-    }
-
-    /**
-     * STRICT: Returns a pure builder. Call .build() to get TabConfig,
-     * then pass it to registerCreativeTab().
-     *
-     * NOTE: FERCreativeTabBuilder constructor must be updated to
-     * FERCreativeTabBuilder(String name) — no FootEasyRegisterSystem param.
-     */
-    public FERCreativeTabBuilder creativeTab(String name) {
-        return new FERCreativeTabBuilder(name);
     }
 
     public <S extends FlowingFluid, F extends FlowingFluid> FERFluidBuilder<S, F> fluid(String name) {
@@ -349,4 +334,8 @@ public final class FootEasyRegisterSystem {
     public <ETACM extends AbstractContainerMenu> FERMenuLinkedScreenBuilder<ETACM> screenBuilder(MenuType<ETACM> menuType) {
         return new FERMenuLinkedScreenBuilder<>(this, menuType);
     }
+    public <BE extends BlockEntity> FERMultiblockBuilder<BE> multiblock(BlockEntityType<BE> controllerType) {
+        return new FERMultiblockBuilder<>(this, controllerType);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.footdablit2310.footlib.easy_register.builders;
 
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
+import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.world.item.CreativeModeTab;
@@ -17,9 +18,10 @@ public class FERItemBuilder<T extends Item> {
     private final Supplier<T> factory;
 
     private boolean addToCreativeTab = false;
-    private CreativeModeTab explicitTab = null;
+    private ResourceKey<CreativeModeTab> explicitTab = null;
     private boolean enableDatagen = false;
 
+    private String tabName;
     private Consumer<RecipeOutput> recipeBuilder = null;
 
     public FERItemBuilder(FootEasyRegisterSystem reg, String name, Supplier<T> factory) {
@@ -31,12 +33,13 @@ public class FERItemBuilder<T extends Item> {
     // -------------------------
     // CREATIVE TAB
     // -------------------------
-    public FERItemBuilder<T> creativeTab() {
+    public FERItemBuilder<T> creativeTab(String tabName) {
         this.addToCreativeTab = true;
+        this.tabName = tabName;
         return this;
     }
 
-    public FERItemBuilder<T> creativeTab(CreativeModeTab tab) {
+    public FERItemBuilder<T> creativeTab(ResourceKey<CreativeModeTab> tab) {
         this.addToCreativeTab = true;
         this.explicitTab = tab;
         return this;
@@ -68,14 +71,9 @@ public class FERItemBuilder<T extends Item> {
         // CREATIVE TAB
         if (addToCreativeTab) {
             if (explicitTab != null) {
-                reg.addToSpecificCreativeTab(explicitTab, () -> new ItemStack(holder));
+                reg.addToExistingTab(explicitTab, () -> new ItemStack(holder));
             } else {
-                if (!reg.hasCreativeTab()) {
-                    throw new IllegalStateException(
-                        "Item '" + name + "' called .creativeTab() but no FER creative tab exists."
-                    );
-                }
-                reg.tryAddToCreativeTab(() -> new ItemStack(holder));
+                reg.addToTab(tabName, () -> new ItemStack(holder));
             }
         }
 

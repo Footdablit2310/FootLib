@@ -29,7 +29,7 @@ public final class FERMenuLinkedScreenBuilder<ETACM extends AbstractContainerMen
             throw new IllegalStateException("Screen builder missing factory()");
 
         ScreenRegistration<ETACM> registration =
-                new ScreenRegistration<ETACM>(menuType, factory);
+                new ScreenRegistration<>(menuType, factory);
 
         reg.addScreen(registration);
         return registration;

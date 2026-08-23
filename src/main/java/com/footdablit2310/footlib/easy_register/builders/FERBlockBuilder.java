@@ -2,6 +2,7 @@ package com.footdablit2310.footlib.easy_register.builders;
 
 import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
 
+import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.tags.TagKey;
@@ -21,9 +22,10 @@ public class FERBlockBuilder<T extends Block> {
     private final Supplier<T> factory;
 
     private boolean addToCreativeTab = false;
-    private CreativeModeTab explicitTab = null;
+    private ResourceKey<CreativeModeTab> explicitTab = null;
     private boolean enableDatagen = false;
     private boolean createSimpleItem = false;
+    private String tabName;
 
     private Consumer<RecipeOutput> recipeBuilder = null;
     
@@ -50,12 +52,13 @@ public class FERBlockBuilder<T extends Block> {
     }
 
     //CREATIVE TAB
-    public FERBlockBuilder<T> creativeTab() {
+    public FERBlockBuilder<T> creativeTab(String tabName) {
         this.addToCreativeTab = true;
+        this.tabName = tabName;
         return this;
     }
 
-    public FERBlockBuilder<T> creativeTab(CreativeModeTab tab) {
+    public FERBlockBuilder<T> creativeTab(ResourceKey<CreativeModeTab> tab) {
         this.addToCreativeTab = true;
         this.explicitTab = tab;
         return this;
@@ -98,15 +101,9 @@ public class FERBlockBuilder<T extends Block> {
                 new ItemStack(createSimpleItem ? holder.get().asItem() : holder.get());
 
             if (explicitTab != null) {
-                reg.addToSpecificCreativeTab(explicitTab, stackSupplier);
-            } else {
-                if (!reg.hasCreativeTab()) {
-                    throw new IllegalStateException(
-                        "Block '" + name + "' called .creativeTab() but no FER creative tab exists."
-                    );
-                }
-                reg.tryAddToCreativeTab(stackSupplier);
+                reg.addToExistingTab(explicitTab, stackSupplier);
             }
+            reg.addToTab(tabName, stackSupplier);
         }
 
         // --- DATAGEN ---

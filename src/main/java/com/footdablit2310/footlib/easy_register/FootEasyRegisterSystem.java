@@ -4,6 +4,7 @@ import com.footdablit2310.footlib.easy_register.builders.*;
 import com.footdablit2310.footlib.FootLib;
 import com.footdablit2310.footlib.easy_register.config.TabConfig;
 
+import com.footdablit2310.footlib.easy_register.types.FERCommandEntry;
 import com.footdablit2310.footlib.easy_register.types.ScreenRegistration;
 import com.footdablit2310.footlib.registry.custom.multiblock.CustomMultiblockRegistryKeys;
 import com.footdablit2310.footlib.registry.custom.multiblock.MultiblockRegistryData;
@@ -24,7 +25,9 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.minecraft.tags.TagKey;
@@ -47,6 +50,9 @@ public final class FootEasyRegisterSystem {
     public final DeferredRegister<MenuType<?>> menus;
 
     public final DeferredRegister<MultiblockRegistryData<?>> multiblocks;
+
+    private final List<FERCommandEntry> commandEntries = new ArrayList<>();
+
 
     public final Map<MenuType<? extends AbstractContainerMenu>, ScreenRegistration<? extends AbstractContainerMenu>> screens = new HashMap<>();
 
@@ -149,7 +155,7 @@ public final class FootEasyRegisterSystem {
      * Deferred entries for this tab name are merged BEFORE the registry lambda is captured,
      * preventing DeferredHolder.get() misuse and lambda capture bugs.
      */
-    public Supplier<CreativeModeTab> registerCreativeTab(TabConfig config) {
+    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerCreativeTab(TabConfig config) {
         // Auto-register lang for translatable titles.
         if (config.title().getContents() instanceof TranslatableContents tc) {
             String key = tc.getKey();
@@ -331,11 +337,26 @@ public final class FootEasyRegisterSystem {
     public void addScreen(ScreenRegistration<? extends AbstractContainerMenu> reg) {
         this.screens.put(reg.menuType(), reg);
     }
-    public <ETACM extends AbstractContainerMenu> FERMenuLinkedScreenBuilder<ETACM> screenBuilder(MenuType<ETACM> menuType) {
+    public <ETACM extends AbstractContainerMenu> FERMenuLinkedScreenBuilder<ETACM> screen(MenuType<ETACM> menuType) {
         return new FERMenuLinkedScreenBuilder<>(this, menuType);
     }
     public <BE extends BlockEntity> FERMultiblockBuilder<BE> multiblock(BlockEntityType<BE> controllerType) {
         return new FERMultiblockBuilder<>(this, controllerType);
+    }
+
+    public void addCommand(FERCommandEntry entry) {
+        commandEntries.add(entry);
+    }
+    public FERCommandBuilder command() {
+        return new FERCommandBuilder(this);
+    }
+    public FERCommandBuilder command(String namespace) {
+        return new FERCommandBuilder(this, namespace);
+    }
+    private void onRegisterCommands(RegisterCommandsEvent event) {
+        for (FERCommandEntry entry : commandEntries) {
+            event.getDispatcher().register(entry.build());
+        }
     }
 
 }

@@ -31,23 +31,35 @@ public final class ModPresence {
     /**
      * Returns a List<ModContainer> of all installed mods.
      */
-    public static List<ModContainer> ReturnAllInstalledModContainerAsList() {
+    public static List<ModContainer> getAllInstalledModContainerAsList() {
         return ModList.get().getSortedMods();
     }
+    public static List<String> getAllInstalledModsAsModIdList() {
+        return ModList.get().getSortedMods()
+                .stream()
+                .map(ModContainer::getModId)
+                .toList();
+    }
 
-    // Other mod IDs
-    public static final String CREATE = "create";
+    // JEI and EMI
     public static final String JEI = "jei";
     public static final String EMI = "emi";
-    public static final String CREATE_RAILWAYS_NAVIGATOR = "createrailwaysnavigator";
+    // Create Mod
+    public static final String CREATE = "create";
     public static final String PONDER = "ponder";
     public static final String FLYWHEEL = "flywheel";
+    // CRN
+    public static final String CREATE_RAILWAYS_NAVIGATOR = "createrailwaysnavigator";
+    // Sable
+    public static final String SABLE_COMPANION = "sablecompanion";
+    public static final String SABLE = "sable";
 
-    // Your mods
+    // Foot mods
     public static final String FOOTLIB = "footlib";
     public static final String FOOT_DEVICES = "footdevices";
     public static final String FOOT_ELECTRICITY = "footelectricity";
     public static final String FOOT_ECONOMY = "footeconomy";
-    public static final String FOOT_ORGNIC_PROCESSING = "footorganicprocessing";
+    public static final String FOOT_ORGANIC_PROCESSING = "footorganicprocessing";
     public static final String CREATE_TRAIN_FARES = "createtrainfares";
+
 }

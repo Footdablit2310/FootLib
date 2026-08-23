@@ -17,8 +17,6 @@ public final class FERMenuBuilder<T extends AbstractContainerMenu> {
 
     private Object constructor; // MenuSupplier<T> OR IContainerFactory<T>
 
-    private DeferredHolder<MenuType<?>, MenuType<T>> holder;
-
     private FeatureFlagSet featureFlags = FeatureFlags.DEFAULT_FLAGS;
 
     public FERMenuBuilder(FootEasyRegisterSystem reg, String name) {
@@ -53,14 +51,12 @@ public final class FERMenuBuilder<T extends AbstractContainerMenu> {
             throw new IllegalStateException("Menu '" + name + "' is missing a supplier() or factory()");
         }
 
-        holder = reg.menus.register(name, () ->
+        return reg.menus.register(name, () ->
                 new MenuType<>(
                         (MenuType.MenuSupplier<T>) constructor,
                         this.featureFlags
                 )
         );
-
-        return holder;
     }
 
 

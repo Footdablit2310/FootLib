@@ -33,7 +33,7 @@ public final class FERBlockEntityBuilder<T extends BlockEntity> {
         return reg.blockEntities.register(name, () ->
             BlockEntityType.Builder.of(factory,
                 validBlocks.stream().map(Supplier::get).toArray(Block[]::new)
-            ).build(null)
+            ).build(null) //Null is here because we do not need mojang DataFixers here.
         );
     }
 }

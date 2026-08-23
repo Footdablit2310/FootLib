@@ -29,6 +29,9 @@ repositories {
     maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
     maven { url = "https://maven.ithundxr.dev/snapshots" } // Registrate
     maven { url = "https://maven.blamejared.com"} // JEI
+    maven { url = "https://maven.ryanhcode.dev/releases"} // Sable
+    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"}
+    mavenCentral()
 }
 
 base {
@@ -96,18 +99,25 @@ configurations {
 }
 
 dependencies {
+    // NeoForge
+    implementation "net.neoforged:neoforge:${neo_version}"
     // JEI API (compile only)
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     // JEI runtime
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
     // Create, Ponder, Flywheel, and Registrate dependencies
-    implementation "net.neoforged:neoforge:${neo_version}"
     implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
     implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
     localRuntime("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+    // Sable and Simulated
+    jarJar(api("dev.ryanhcode.sable-companion:sable-companion-common-1.21.1:[${project.sable_companion_version},)"))
+    api("dev.ryanhcode.sable:sable-common-${project.minecraft_version}:${project.sable_version}")
+    // Dependencies of Dependencies
+    api("fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:${forgeconfigapiport_version}")
+
 
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
@@ -132,7 +142,10 @@ tasks.withType(ProcessResources).configureEach {
             ponder_version         : ponder_version,
             flywheel_version       : flywheel_version,
             registrate_version     : registrate_version,
-            jei_version            : jei_version
+            jei_version            : jei_version,
+            sable_companion_version: sable_companion_version,
+            sable_version          : sable_version,
+            forgeconfigapiport_version : forgeconfigapiport_version
     ]
     inputs.properties replaceProperties
 

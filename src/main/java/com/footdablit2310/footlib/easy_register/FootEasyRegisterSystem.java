@@ -8,6 +8,7 @@ import com.footdablit2310.footlib.easy_register.types.FERCommandEntry;
 import com.footdablit2310.footlib.easy_register.types.ScreenRegistration;
 import com.footdablit2310.footlib.registry.custom.multiblock.CustomMultiblockRegistryKeys;
 import com.footdablit2310.footlib.registry.custom.multiblock.MultiblockRegistryData;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -347,11 +348,11 @@ public final class FootEasyRegisterSystem {
     public void addCommand(FERCommandEntry entry) {
         commandEntries.add(entry);
     }
-    public FERCommandBuilder command() {
-        return new FERCommandBuilder(this);
+    public FERCommandBuilder command(CommandBuildContext context) {
+        return new FERCommandBuilder(this, context);
     }
-    public FERCommandBuilder command(String namespace) {
-        return new FERCommandBuilder(this, namespace);
+    public FERCommandBuilder command(String namespace, CommandBuildContext context) {
+        return new FERCommandBuilder(this, namespace, context);
     }
     private void onRegisterCommands(RegisterCommandsEvent event) {
         for (FERCommandEntry entry : commandEntries) {

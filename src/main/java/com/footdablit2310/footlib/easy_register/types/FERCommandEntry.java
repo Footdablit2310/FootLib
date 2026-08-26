@@ -13,29 +13,15 @@ public record FERCommandEntry(
 ) {
 
 	public LiteralArgumentBuilder<CommandSourceStack> build() {
+
 		if (!namespace.isBlank()) {
 			return Commands.literal(namespace)
 				.requires(src -> src.hasPermission(permissionLevel))
-				.then(
-					rootCommand.executes(ctx -> {
-						try {
-							return executor.run(ctx);
-						} catch (Exception e) {
-							throw new RuntimeException(e);
-						}
-					})
-				);
+				.then(rootCommand);
 		} else {
 			FootLib.LOGGER.warn("Running without namespace, this may cause mod conflicts.");
-			return rootCommand.requires(src -> src.hasPermission(permissionLevel))
-				.executes(ctx -> {
-					try {
-						return executor.run(ctx);
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				}
-			);
+			return rootCommand
+				.requires(src -> src.hasPermission(permissionLevel));
 		}
 	}
 }

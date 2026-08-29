@@ -3,7 +3,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>FootLib UnitBlocks Blender Asset Library</title>
 </head>
 <body>
   <h1>FootLib UnitBlocks Blender Asset Library</h1>

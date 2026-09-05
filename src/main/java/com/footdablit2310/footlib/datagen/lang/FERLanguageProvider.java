@@ -1,6 +1,6 @@
 package com.footdablit2310.footlib.datagen.lang;
 
-import com.footdablit2310.footlib.easy_register.FootEasyRegisterSystem;
+import com.footdablit2310.footlib.api.easy_register.FootEasyRegisterSystem;
 
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;

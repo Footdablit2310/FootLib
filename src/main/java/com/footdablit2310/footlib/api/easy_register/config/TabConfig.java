@@ -1,7 +1,6 @@
-package com.footdablit2310.footlib.easy_register.config;
+package com.footdablit2310.footlib.api.easy_register.config;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;

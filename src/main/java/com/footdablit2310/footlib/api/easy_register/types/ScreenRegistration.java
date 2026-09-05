@@ -1,4 +1,4 @@
-package com.footdablit2310.footlib.easy_register.types;
+package com.footdablit2310.footlib.api.easy_register.types;
 
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.world.inventory.AbstractContainerMenu;

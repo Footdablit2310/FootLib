@@ -122,6 +122,7 @@
   See <a href="README_BLENDER.md">README_BLENDER.md</a> for details.
 </p>
 
+Download link: https://modrinth.com/project/18KUjTNM
 
 </body>
 </html>

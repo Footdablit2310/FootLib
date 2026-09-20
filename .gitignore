@@ -41,8 +41,7 @@ repo/
 !**/src/**/repo/
 runs/
 !**/src/**/runs/
-buildSrc/
-!**/src/**/buildSrc/
+lib/
 
 # Compiled class file
 *.class

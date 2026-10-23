@@ -175,7 +175,7 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
                 reg.registerItemModel(name + "_bucket", bucketItem.get());
 
             reg.registerLang("fluid." + reg.getModId() + "." + name,
-                FootEasyRegisterSystem.SnakeToNormalCase(name));
+                FootEasyRegisterSystem.snakeToNormalCase(name));
         }
 
         // RECIPE

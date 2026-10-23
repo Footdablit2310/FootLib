@@ -81,7 +81,7 @@ public class FERItemBuilder<T extends Item> {
         if (enableDatagen) {
             reg.registerItemModel(name, holder.get());
             reg.registerLang(holder.get().getDescriptionId(),
-                FootEasyRegisterSystem.SnakeToNormalCase(name));
+                FootEasyRegisterSystem.snakeToNormalCase(name));
         }
 
         // RECIPE

@@ -12,7 +12,6 @@ import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -157,7 +156,7 @@ public final class FootEasyRegisterSystem {
             String key = tc.getKey();
             String value = (this.visualName != null && !this.visualName.isBlank())
                     ? this.visualName
-                    : SnakeToNormalCase(config.name());
+                    : snakeToNormalCase(config.name());
             creativeTabLang.put(key, value);
         }
         List<Supplier<ItemStack>> entries = new ArrayList<>(
@@ -165,9 +164,11 @@ public final class FootEasyRegisterSystem {
         );
 
         return tabs.register(config.name(), () -> {
-            CreativeModeTab.Builder builder = CreativeModeTab.builder()
-                    .title(config.title())
-                    .icon(config.icon());
+            CreativeModeTab.Builder builder = CreativeModeTab.builder().title(config.title());
+
+            if (config.icon() != null) {
+                builder = builder.icon(config.icon());
+            }
 
             if (config.searchBar()) {
                 builder = builder.withSearchBar(config.searchBarWidth());
@@ -238,7 +239,7 @@ public final class FootEasyRegisterSystem {
     public void registerRecipe(Consumer<RecipeOutput> builder) {
         recipeEntries.add(builder);
     }
-    public static String SnakeToNormalCase(String snake) {
+    public static String snakeToNormalCase(String snake) {
         if (snake == null || snake.isEmpty()) return snake;
 
         StringBuilder result = new StringBuilder();

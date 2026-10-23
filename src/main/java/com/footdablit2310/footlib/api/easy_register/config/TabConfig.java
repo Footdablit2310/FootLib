@@ -43,14 +43,13 @@ public class TabConfig {
         if (searchBarWidth <= 0) {
             searchBarWidth = 89;
         }
+        this.searchBarWidth = searchBarWidth;
+        this.searchBar = searchBar;
+	    this.icon = icon.orElse(null);
         // Defensive copies
-        if (afterTabs.isEmpty()) {
-            this.afterTabs = null;
-        } else { this.afterTabs = List.copyOf(afterTabs.get()); }
-        if (beforeTabs.isEmpty()) {
-            this.beforeTabs = null;
-        } else { this.beforeTabs = List.copyOf(beforeTabs.get()); }
-
+	    this.afterTabs = afterTabs.map(List::copyOf).orElse(null);
+	    this.beforeTabs = beforeTabs.map(List::copyOf).orElse(null);
+        this.displayGenerator = displayGenerator.orElse(null);
     }
 
 

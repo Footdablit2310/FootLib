@@ -3,7 +3,7 @@ package com.footdablit2310.footlib.registry;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.footdablit2310.footlib.registry.helpers.heat.HeatTier;
+import com.footdablit2310.footlib.registry.custom.heat.HeatTier;
 
 public final class HeatTierRegistry {
 

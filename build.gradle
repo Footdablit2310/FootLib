@@ -117,6 +117,11 @@ dependencies {
     api("dev.ryanhcode.sable:sable-common-${project.minecraft_version}:${project.sable_version}")
     // Dependencies of Dependencies
     api("fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:${forgeconfigapiport_version}")
+    // This is JgLTF
+    // jarJar(implementation("de.javagl:jgltf-model:3.0.1"))
+    // jarJar(implementation("de.javagl:jgltf-model-extensions:3.0.1"))
+    // jarJar(implementation("de.javagl:jgltf-model-builder:3.0.1"))
+    // jarJar(implementation("de.javagl:jgltf-obj:3.0.1"))
 
 
     // For more info:
@@ -130,22 +135,23 @@ dependencies {
 // See https://docs.gradle.org/current/dsl/org.gradle.language.jvm.tasks.ProcessResources.html
 tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [
-            minecraft_version      : minecraft_version,
-            minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
-            loader_version_range   : loader_version_range,
-            mod_id                 : mod_id,
-            mod_name               : mod_name,
-            mod_license            : mod_license,
-            mod_version            : mod_version,
-            create_version         : create_version,
-            ponder_version         : ponder_version,
-            flywheel_version       : flywheel_version,
-            registrate_version     : registrate_version,
-            jei_version            : jei_version,
-            sable_companion_version: sable_companion_version,
-            sable_version          : sable_version,
-            forgeconfigapiport_version : forgeconfigapiport_version
+            minecraft_version          : minecraft_version,
+            minecraft_version_range    : minecraft_version_range,
+            neo_version                : neo_version,
+            loader_version_range       : loader_version_range,
+            mod_id                     : mod_id,
+            mod_name                   : mod_name,
+            mod_license                : mod_license,
+            mod_version                : mod_version,
+            create_version             : create_version,
+            ponder_version             : ponder_version,
+            flywheel_version           : flywheel_version,
+            registrate_version         : registrate_version,
+            jei_version                : jei_version,
+            sable_companion_version    : sable_companion_version,
+            sable_version              : sable_version,
+            forgeconfigapiport_version : forgeconfigapiport_version,
+            jgltf_version              : jgltf_version,
     ]
     inputs.properties replaceProperties
 
@@ -153,6 +159,10 @@ tasks.withType(ProcessResources).configureEach {
         expand replaceProperties
     }
 }
+ext.gltfEntrypoint = [
+        entrypoint: null
+]
+
 
 tasks.register("publishToModrinth") {
     group = "publishing"
@@ -239,6 +249,13 @@ tasks.register("publishToModrinth") {
         }
     }
 }
+
+sourceSets {
+    gltf {
+        java.srcDir("$buildDir/gltfSources")
+    }
+}
+
 
 
 tasks.withType(JavaCompile).configureEach {

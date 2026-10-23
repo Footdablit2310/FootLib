@@ -3,7 +3,7 @@ package com.footdablit2310.footlib.exceptions;
 /**
  * This Exception is made for stating that something is null where null is not allowed.
  */
-public class IllegalNullValueException extends Exception {
+public class IllegalNullValueException extends RuntimeException {
 
 	public IllegalNullValueException() {
 		super();

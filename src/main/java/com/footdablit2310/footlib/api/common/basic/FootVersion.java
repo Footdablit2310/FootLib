@@ -2,13 +2,18 @@ package com.footdablit2310.footlib.api.common.basic;
 
 import com.footdablit2310.footlib.exceptions.IllegalNullValueException;
 
+/**
+ * This is FootVersion read VERSIONING.md for more details, but essentially it's the versioning class with my versioning system.
+ * The channel of type {@link ReleaseChannel} is there to just mark how stable whatever you made is and how much of it has been tested.
+ * Since: 1.4.2.3-alpha
+ */
 public class FootVersion {
 	private int overhaul;
 	private int major;
 	private int semiMajor;
 	private int minor;
 	private ReleaseChannel channel;
-	public FootVersion(int overhaul, int major, int semiMajor, int minor,ReleaseChannel channel) {}
+	public FootVersion(int overhaul, int major, int semiMajor, int minor, ReleaseChannel channel) {}
 	public static ReleaseChannel stringToReleaseChannel(String name) {
 		if (name.isBlank()) {
 			throw new IllegalNullValueException("String cannot be empty.");

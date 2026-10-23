@@ -2,208 +2,131 @@ package com.footdablit2310.footlib.api.easy_register.builders;
 
 import com.footdablit2310.footlib.api.easy_register.FootEasyRegisterSystem;
 import com.footdablit2310.footlib.api.easy_register.types.CommandExecutor;
-import com.footdablit2310.footlib.api.easy_register.types.FERCommandEntry;
-import com.footdablit2310.footlib.exceptions.IllegalNullValueException;
-
-import com.mojang.brigadier.arguments.*;
-import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
-import net.minecraft.commands.arguments.item.ItemArgument;
-import net.minecraft.commands.arguments.EntityArgument;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class FERCommandBuilder {
 	private final FootEasyRegisterSystem FER;
-	private String namespace;
-	private LiteralArgumentBuilder<CommandSourceStack> rootCommand;
-
-	private int permissionLevel = 0;
-	private CommandExecutor executor;
-
 	private final CommandBuildContext context;
+	private String namespace;
 
-	private final List<ArgumentBuilder<CommandSourceStack, ?>> args = new ArrayList<>();
-	private final Map<String, ArgumentValidator<?>> validators = new HashMap<>();
-	private final Deque<LiteralArgumentBuilder<CommandSourceStack>> stack = new ArrayDeque<>();
-	private LiteralArgumentBuilder<CommandSourceStack> topLiteral;
+	private CommandInfoList tree;
 
-
-
-
-	public FERCommandBuilder(FootEasyRegisterSystem FER, CommandBuildContext context) {
-		this.FER = FER;
-		this.namespace = FER.getModId(); // default namespace
+	public FERCommandBuilder(FootEasyRegisterSystem fer, String namespace, CommandBuildContext context) {
+		this.FER = fer;
 		this.context = context;
-	}
-	public FERCommandBuilder(FootEasyRegisterSystem FER, String namespace, CommandBuildContext context) {
-		this.FER = FER;
 		this.namespace = namespace;
-		this.context = context;
 	}
 
-	public FERCommandBuilder namespace(String ns) {
-		this.namespace = ns;
+	public FERCommandBuilder(FootEasyRegisterSystem fer, CommandBuildContext context) {
+		this.FER = fer;
+		this.context = context;
+		this.namespace = fer.getModId();
+	}
+
+	public FERCommandBuilder literal(String name) {
+		if (tree == null)
+			tree = new CommandInfoList(name);
+		else
+			tree.addChild(name);
 		return this;
 	}
 
 	public FERCommandBuilder sub(String name) {
-		if (name.isBlank()) {
-			throw new IllegalNullValueException("Blank String can not be a subcommand name");
-		}
-		LiteralArgumentBuilder<CommandSourceStack> sub = Commands.literal(name);
-		stack.push(rootCommand);
-		rootCommand.then(sub);
-		rootCommand = sub;
-		return this;
-	}
-
-	public FERCommandBuilder literal(String name) {
-		if (name.isBlank()) {
-			throw new IllegalNullValueException("Blank String can not be a command name");
-		}
-		LiteralArgumentBuilder<CommandSourceStack> lit = Commands.literal(name);
-
-		if (rootCommand != null) {
-			stack.push(rootCommand);
-			rootCommand.then(lit);
-		} else {
-			topLiteral = lit; // store the root literal
-		}
-
-		rootCommand = lit;
-		return this;
-	}
-
-	public FERCommandBuilder argumentPlayer(String name) {
-		args.add(
-			Commands.argument(name, EntityArgument.player())
-		);
-		return this;
-	}
-	// Boolean argument
-	public FERCommandBuilder argumentBool(String name) {
-		args.add(Commands.argument(name, BoolArgumentType.bool()));
-		return this;
-	}
-
-	// Float argument
-	public FERCommandBuilder argumentFloat(String name) {
-		args.add(Commands.argument(name, FloatArgumentType.floatArg()));
-		return this;
-	}
-
-	// Double argument
-	public FERCommandBuilder argumentDouble(String name) {
-		args.add(Commands.argument(name, DoubleArgumentType.doubleArg()));
-		return this;
-	}
-
-	// Block position argument
-	public FERCommandBuilder argumentBlockPos(String name) {
-		args.add(Commands.argument(name, BlockPosArgument.blockPos()));
-		return this;
-	}
-
-	// Item argument
-	public FERCommandBuilder argumentItem(String name) {
-		args.add(Commands.argument(name, ItemArgument.item(context)));
-		return this;
-	}
-
-	// Entity argument
-	public FERCommandBuilder argumentEntity(String name) {
-		args.add(Commands.argument(name, EntityArgument.entity()));
-		return this;
-	}
-	public FERCommandBuilder argumentCustom(String name, ArgumentType<?> type) {
-		args.add(Commands.argument(name, type));
-		return this;
-	}
-
-	public FERCommandBuilder requires(int level) {
-		this.permissionLevel = level;
-		return this;
-	}
-
-	public FERCommandBuilder executes(CommandExecutor exec) {
-		this.executor = exec;
+		tree.addChild(name);
 		return this;
 	}
 
 	public FERCommandBuilder goToParent() {
-		if (!stack.isEmpty()) {
-			rootCommand = stack.pop();
-		}
-		return this;
-	}
-
-	public FERCommandBuilder goToParent(int steps) {
-		for (int i = 0; i < steps; i++) {
-			if (!stack.isEmpty()) {
-				rootCommand = stack.pop();
-			} else {
-				break; // no more parents
-			}
-		}
+		tree.goToParent();
 		return this;
 	}
 
 	public FERCommandBuilder root() {
-		if (topLiteral != null) {
-			rootCommand = topLiteral;
-			stack.clear();
-		}
+		tree.goToRoot();
 		return this;
 	}
 
-	public void register() throws IllegalNullValueException {
-		if (executor == null)
-			throw new IllegalNullValueException("Command executor cannot be null.");
+	private static final class CommandInfo {
+		final String name;
+		final List<CommandInfo> children = new ArrayList<>();
+		final List<ArgumentBuilder<CommandSourceStack, ?>> arguments = new ArrayList<>();
 
-		for (ArgumentBuilder<CommandSourceStack, ?> arg : args) {
-			rootCommand.then(arg.executes(ctx -> {
-				try {
-					// Run executor
-					int result = executor.run(ctx);
+		CommandExecutor executor;
+		int permissionLevel = 0;
 
-					// Run validators
-					for (var entry : validators.entrySet()) {
-						String name = entry.getKey();
-						ArgumentValidator validator = entry.getValue();
-						Object value = ctx.getArgument(name, Object.class);
-						validator.validate(value);
+		CommandInfo parent;
+
+		CommandInfo(String name) {
+			this.name = name;
+		}
+
+		LiteralArgumentBuilder<CommandSourceStack> build() {
+			LiteralArgumentBuilder<CommandSourceStack> lit = Commands.literal(name);
+
+			if (permissionLevel > 0)
+				lit.requires(src -> src.hasPermission(permissionLevel));
+
+			if (executor != null)
+				lit.executes(ctx -> {
+					try {
+						return executor.run(ctx);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
 					}
+				});
 
-					return result;
+			for (var arg : arguments)
+				lit.then(arg);
 
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}));
+			for (var child : children)
+				lit.then(child.build());
 
+			return lit;
+		}
+	}
+
+
+	private static final class CommandInfoList {
+		private final CommandInfo root;
+		private CommandInfo current;
+
+		CommandInfoList(String rootName) {
+			this.root = new CommandInfo(rootName);
+			this.current = root;
 		}
 
+		public CommandInfo root() {
+			return root;
+		}
 
-		FER.addCommand(new FERCommandEntry(
-			namespace,
-			rootCommand,
-			permissionLevel,
-			executor
-		));
-	}
-	public FERCommandBuilder validate(String argName, ArgumentValidator<?> validator) {
-		validators.put(argName, validator);
-		return this;
+		public CommandInfo current() {
+			return current;
+		}
+
+		public CommandInfo addChild(String name) {
+			CommandInfo child = new CommandInfo(name);
+			child.parent = current;
+			current.children.add(child);
+			current = child;
+			return child;
+		}
+
+		public void goToParent() {
+			if (current.parent != null)
+				current = current.parent;
+		}
+
+		public void goToRoot() {
+			current = root;
+		}
 	}
 
-	@FunctionalInterface
-	public interface ArgumentValidator<T> {
-		void validate(T value) throws Exception;
-	}
 
 }

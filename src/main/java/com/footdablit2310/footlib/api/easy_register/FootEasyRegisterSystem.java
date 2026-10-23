@@ -5,10 +5,6 @@ import com.footdablit2310.footlib.FootLib;
 import com.footdablit2310.footlib.api.easy_register.config.TabConfig;
 
 import com.footdablit2310.footlib.api.easy_register.types.*;
-import com.footdablit2310.footlib.api.easy_register.types.gltf.*;
-
-import com.footdablit2310.footlib.registry.custom.multiblock.CustomMultiblockRegistryKeys;
-import com.footdablit2310.footlib.registry.custom.multiblock.MultiblockRegistryData;
 
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.registries.Registries;
@@ -16,6 +12,7 @@ import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -52,14 +49,7 @@ public final class FootEasyRegisterSystem {
     public final DeferredRegister<Fluid> fluids;
     public final DeferredRegister<MenuType<?>> menus;
 
-    public final DeferredRegister<MultiblockRegistryData<?>> multiblocks;
-
     private final List<FERCommandEntry> commandEntries = new ArrayList<>();
-
-    public final Map<ResourceLocation, FERModel> MODELS = new HashMap<>();
-    public final Map<ResourceLocation, FERAnimation> ANIMATIONS = new HashMap<>();
-    public final Map<ResourceLocation, FERVariant> VARIANTS = new HashMap<>();
-    public final Map<ResourceLocation, FERBlockstate> BLOCKSTATES = new HashMap<>();
 
 
     public final Map<MenuType<? extends AbstractContainerMenu>, ScreenRegistration<? extends AbstractContainerMenu>> screens = new HashMap<>();
@@ -116,7 +106,6 @@ public final class FootEasyRegisterSystem {
         fluidTypes    = DeferredRegister.create(NeoForgeRegistries.FLUID_TYPES, modId);
         fluids        = DeferredRegister.create(Registries.FLUID, modId);
         menus         = DeferredRegister.create(Registries.MENU, modId);
-        multiblocks   = DeferredRegister.create(CustomMultiblockRegistryKeys.MULTIBLOCK_REGISTRY_KEY, modId);
 
         blocks.register(bus);
         items.register(bus);
@@ -125,7 +114,6 @@ public final class FootEasyRegisterSystem {
         fluidTypes.register(bus);
         fluids.register(bus);
         menus.register(bus);
-        multiblocks.register(bus);
 
         // STRICT: Subscribe to creative tab contents event for existing tabs.
         bus.addListener(this::onBuildContents);
@@ -348,9 +336,6 @@ public final class FootEasyRegisterSystem {
     public <ETACM extends AbstractContainerMenu> FERMenuLinkedScreenBuilder<ETACM> screen(MenuType<ETACM> menuType) {
         return new FERMenuLinkedScreenBuilder<>(this, menuType);
     }
-    public <BE extends BlockEntity> FERMultiblockBuilder<BE> multiblock(BlockEntityType<BE> controllerType) {
-        return new FERMultiblockBuilder<>(this, controllerType);
-    }
 
     public void addCommand(FERCommandEntry entry) {
         commandEntries.add(entry);
@@ -365,26 +350,6 @@ public final class FootEasyRegisterSystem {
         for (FERCommandEntry entry : commandEntries) {
             event.getDispatcher().register(entry.build());
         }
-    }
-
-    public void addModel(ResourceLocation id, FERModel model) {
-        MODELS.put(id, model);
-    }
-
-    public void addAnimation(ResourceLocation id, FERAnimation anim) {
-        ANIMATIONS.put(id, anim);
-    }
-
-    public void addVariant(ResourceLocation id, FERVariant variant) {
-        VARIANTS.put(id, variant);
-    }
-
-    public void addBlockstate(ResourceLocation id, FERBlockstate bs) {
-        BLOCKSTATES.put(id, bs);
-    }
-
-    public FERGltfBuilder gltf(ResourceLocation id) {
-        return new FERGltfBuilder(this, id);
     }
 
 }

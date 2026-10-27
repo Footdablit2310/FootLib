@@ -9,7 +9,6 @@ import com.footdablit2310.footlib.api.easy_register.types.*;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -25,18 +24,18 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import net.minecraft.tags.TagKey;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class FootEasyRegisterSystem {
@@ -72,28 +71,8 @@ public final class FootEasyRegisterSystem {
 
     public Logger LOGGER;
 
-    //lang datagen
+    // lang datagen
     private final Map<String, String> creativeTabLang = new HashMap<>();
-    // Language
-    private final Map<String, String> langEntries = new HashMap<>();
-
-    // Blockstates
-    private final Map<ResourceLocation, Block> blockstateEntries = new HashMap<>();
-
-    // Item models
-    private final Map<ResourceLocation, Item> itemModelEntries = new HashMap<>();
-
-    // Loot tables
-    private final Map<ResourceLocation, Block> lootEntries = new HashMap<>();
-
-    // Tags
-    private final java.util.Map<TagKey<Block>, java.util.List<Block>> blockTagEntries = new java.util.HashMap<>();
-    private final java.util.Map<TagKey<Item>, java.util.List<Item>> itemTagEntries = new java.util.HashMap<>();
-    private final java.util.Map<TagKey<Fluid>, java.util.List<Fluid>> fluidTagEntries = new java.util.HashMap<>();
-    private final Map<TagKey<Block>, TagKey<Item>> copiedBlockTags = new HashMap<>();
-
-    // Recipes
-    private final List<Consumer<RecipeOutput>> recipeEntries = new ArrayList<>();
 
 
     public FootEasyRegisterSystem(String modId, IEventBus bus, String visualName) {
@@ -131,21 +110,12 @@ public final class FootEasyRegisterSystem {
         return visualName;
     }
 
-    // STRICT: Removed isVisualNameUsed() / markVisualNameUsed().
-    // visualName is now just a default string, not a consumable resource.
-
     //datagen lang
     public void registerCreativeTabLang(String key, String value) {
         creativeTabLang.put(key, value);
     }
 
     public Map<String, String> getCreativeTabLang() { return creativeTabLang; }
-    public Map<String, String> getLangEntries() { return langEntries; }
-    public Map<ResourceLocation, Block> getBlockstateEntries() { return blockstateEntries; }
-    public Map<ResourceLocation, Item> getItemModelEntries() { return itemModelEntries; }
-    public Map<ResourceLocation, Block> getLootEntries() { return lootEntries; }
-    public List<Consumer<RecipeOutput>> getRecipeEntries() { return recipeEntries; }
-
     // ------------------------------------------------------------
     // STRICT: Creative Tab Registration
     // ------------------------------------------------------------
@@ -155,7 +125,7 @@ public final class FootEasyRegisterSystem {
      * Deferred entries for this tab name are merged BEFORE the registry lambda is captured,
      * preventing DeferredHolder.get() misuse and lambda capture bugs.
      */
-    public DeferredHolder<CreativeModeTab, CreativeModeTab> registerCreativeTab(TabConfig config) {
+    public @NotNull DeferredHolder<CreativeModeTab, CreativeModeTab> registerCreativeTab(@NotNull TabConfig config) {
         // Auto-register lang for translatable titles.
         if (config.title().getContents() instanceof TranslatableContents tc) {
             String key = tc.getKey();
@@ -186,9 +156,9 @@ public final class FootEasyRegisterSystem {
             }
 
             builder = builder.displayItems((params, output) -> {
-                if (config.displayGenerator() != null) {
-                    config.displayGenerator().accept(params, output);
-                }
+                config.displayGenerator().ifPresent(
+                    generator -> generator.accept(params, output)
+                );
                 entries.forEach(s -> output.accept(s.get()));
             });
 
@@ -215,6 +185,7 @@ public final class FootEasyRegisterSystem {
     /**
      * NeoForge event handler for populating existing creative tabs.
      */
+    @SubscribeEvent
     private void onBuildContents(BuildCreativeModeTabContentsEvent event) {
         List<Supplier<ItemStack>> entries = existingTabEntries.get(event.getTabKey());
         if (entries == null) return;
@@ -222,28 +193,6 @@ public final class FootEasyRegisterSystem {
         entries.forEach(s -> event.accept(s.get()));
     }
 
-    //------------------\
-    // Datagen          |
-    //------------------/
-    public void registerLang(String key, String value) {
-        langEntries.put(key, value);
-    }
-
-    public void registerBlockstate(String name, Block block) {
-        blockstateEntries.put(ResourceLocation.fromNamespaceAndPath(modId, name), block);
-    }
-
-    public void registerItemModel(String name, Item item) {
-        itemModelEntries.put(ResourceLocation.fromNamespaceAndPath(modId, name), item);
-    }
-
-    public void registerLoot(String name, Block block) {
-        lootEntries.put(ResourceLocation.fromNamespaceAndPath(modId, name), block);
-    }
-
-    public void registerRecipe(Consumer<RecipeOutput> builder) {
-        recipeEntries.add(builder);
-    }
     public static String snakeToNormalCase(String snake) {
         if (snake == null || snake.isEmpty()) return snake;
 
@@ -269,34 +218,6 @@ public final class FootEasyRegisterSystem {
         }
 
         return result.toString();
-    }
-
-    public void registerBlockTag(TagKey<Block> tag, Block block) {
-        blockTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(block);
-    }
-
-    public void registerFluidTag(TagKey<Fluid> tag, Fluid fluid) {
-        fluidTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(fluid);
-    }
-
-    public void registerItemTag(TagKey<Item> tag, Item item) {
-        itemTagEntries.computeIfAbsent(tag, t -> new java.util.ArrayList<>()).add(item);
-    }
-
-    public Map<TagKey<Block>, List<Block>> getBlockTagEntries() {
-        return blockTagEntries;
-    }
-
-    public Map<TagKey<Item>, List<Item>> getItemTagEntries() {
-        return itemTagEntries;
-    }
-
-    public void copyBlockTagToItemTag(TagKey<Block> blockTag, TagKey<Item> itemTag) {
-        copiedBlockTags.put(blockTag, itemTag);
-    }
-
-    public Map<TagKey<Block>, TagKey<Item>> getCopiedBlockTags() {
-        return copiedBlockTags;
     }
 
     public <T extends Block> FERBlockBuilder<T> block(String name, Supplier<T> factory) {
@@ -352,7 +273,8 @@ public final class FootEasyRegisterSystem {
     public FERCommandBuilder command(String namespace, CommandBuildContext context) {
         return new FERCommandBuilder(this, namespace, context);
     }
-    private void onRegisterCommands(RegisterCommandsEvent event) {
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
         for (FERCommandEntry entry : commandEntries) {
             event.getDispatcher().register(entry.build());
         }

@@ -7,8 +7,6 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -17,16 +15,15 @@ import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
 
-    private final FootEasyRegisterSystem reg;
-    private final String name;
+    private final @NotNull FootEasyRegisterSystem reg;
+    private final @NotNull String name;
 
     private DeferredHolder<Item, BucketItem> bucketItem;
     private DeferredHolder<Block, LiquidBlock> fluidBlock;
@@ -34,16 +31,10 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
     private boolean addFluidBlock = false;
 
     private boolean addToCreativeTab = false;
-    private ResourceKey<CreativeModeTab> explicitTab = null;
-    private boolean enableDatagen = false;
-
-    private Consumer<RecipeOutput> recipeBuilder = null;
+    private @Nullable ResourceKey<CreativeModeTab> explicitTab = null;
     private Supplier<FluidType> typeSupplier;
     private Supplier<S> sourceSupplier;
     private Supplier<F> flowingSupplier;
-
-    private final java.util.List<TagKey<Fluid>> fluidTags = new java.util.ArrayList<>();
-    private String customLangName = null;
     private FERFluidCreativeTabConfig fluidCreativeTabConfig;
     private String tabName;
 
@@ -51,43 +42,35 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
             boolean bucketItem,
             boolean fluidBlock
     ) {
-        public static FERFluidCreativeTabConfig DEFAULT = new FERFluidCreativeTabConfig(true, false);
-        private boolean isValid() {
-            return bucketItem && fluidBlock;
-        }
+        public static @NotNull FERFluidCreativeTabConfig DEFAULT = new FERFluidCreativeTabConfig(true, false);
     }
 
-    public FERFluidBuilder(FootEasyRegisterSystem reg, String name) {
+    public FERFluidBuilder(@NotNull FootEasyRegisterSystem reg, @NotNull String name) {
         this.reg = reg;
         this.name = name;
     }
 
-    public FERFluidBuilder<S, F> creativeTab(String tabName, Optional<FERFluidCreativeTabConfig> fluidCreativeTabConfig) {
+    public FERFluidBuilder<S, F> creativeTab(@NotNull String tabName, @Nullable FERFluidCreativeTabConfig fluidCreativeTabConfig) {
         this.addToCreativeTab = true;
-        try {
-            this.fluidCreativeTabConfig = fluidCreativeTabConfig.get();
-        } catch (NoSuchElementException e) {
-            this.fluidCreativeTabConfig = new FERFluidCreativeTabConfig(true, false);
-            FootLib.LOGGER.warn("No defined Config, using default fallback", e);
+        if (fluidCreativeTabConfig != null) {
+            this.fluidCreativeTabConfig = fluidCreativeTabConfig;
+        } else {
+            this.fluidCreativeTabConfig = FERFluidCreativeTabConfig.DEFAULT;
+            FootLib.LOGGER.warn("No defined Config, using default fallback");
         }
         this.tabName = tabName;
         return this;
     }
 
-    public FERFluidBuilder<S, F> customCreativeTab(ResourceKey<CreativeModeTab> tab, Optional<FERFluidCreativeTabConfig> fluidCreativeTabConfig) {
+    public FERFluidBuilder<S, F> customCreativeTab(ResourceKey<CreativeModeTab> tab, @Nullable FERFluidCreativeTabConfig fluidCreativeTabConfig) {
         this.addToCreativeTab = true;
         this.explicitTab = tab;
-        try {
-            this.fluidCreativeTabConfig = fluidCreativeTabConfig.get();
-        } catch (NoSuchElementException e) {
-            this.fluidCreativeTabConfig = new FERFluidCreativeTabConfig(true, false);
-            FootLib.LOGGER.warn("No defined Config, using default fallback", e);
+        if (fluidCreativeTabConfig != null) {
+            this.fluidCreativeTabConfig = fluidCreativeTabConfig;
+        } else {
+            this.fluidCreativeTabConfig = FERFluidCreativeTabConfig.DEFAULT;
+            FootLib.LOGGER.warn("No defined Config, using default fallback");
         }
-        return this;
-    }
-
-    public FERFluidBuilder<S, F> datagen() {
-        this.enableDatagen = true;
         return this;
     }
 
@@ -117,28 +100,12 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         return this;
     }
 
-
-    public FERFluidBuilder<S, F> recipe(Consumer<RecipeOutput> builder) {
-        this.recipeBuilder = builder;
-        return this;
-    }
-
     public FERFluidBuilder<S, F> customBucketItem(DeferredHolder<Item, BucketItem> bucket) {
         this.bucketItem = bucket;
         return this;
     }
     public FERFluidBuilder<S, F> bucketItem() {
         this.addBucketItem=true;
-        return this;
-    }
-
-    public FERFluidBuilder<S, F> tag(TagKey<Fluid> tag) {
-        this.fluidTags.add(tag);
-        return this;
-    }
-
-    public FERFluidBuilder<S, F> lang(String name) {
-        this.customLangName = name;
         return this;
     }
 
@@ -156,33 +123,18 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
         if (addToCreativeTab) {
 
             if (explicitTab != null) {
-                if (bucketItem != null)
+                if (fluidCreativeTabConfig.bucketItem)
                     reg.addToExistingTab(explicitTab, () -> new ItemStack(bucketItem.get()));
-                if (fluidBlock != null)
+                if (fluidCreativeTabConfig.fluidBlock)
                     reg.addToExistingTab(explicitTab, () -> new ItemStack(fluidBlock.get()));
             } else {
 
-                if (bucketItem != null)
+                if (fluidCreativeTabConfig.bucketItem)
                     reg.addToTab(tabName, () -> new ItemStack(bucketItem.get()));
-                if (fluidBlock != null)
+                if (fluidCreativeTabConfig.fluidBlock)
                     reg.addToTab(tabName, () -> new ItemStack(fluidBlock.get()));
             }
         }
-
-        // DATAGEN
-        if (enableDatagen) {
-            if (bucketItem != null)
-                reg.registerItemModel(name + "_bucket", bucketItem.get());
-
-            reg.registerLang("fluid." + reg.getModId() + "." + name,
-                FootEasyRegisterSystem.snakeToNormalCase(name));
-        }
-
-        // RECIPE
-        if (recipeBuilder != null) {
-            reg.registerRecipe(recipeBuilder);
-        }
-
     }
     public FluidRegistration<S, F> register() {
 
@@ -196,19 +148,6 @@ public class FERFluidBuilder<S extends FlowingFluid, F extends FlowingFluid> {
 
         DeferredHolder<Fluid, F> flowingReg =
             reg.fluids.register(name + "_flowing", flowingSupplier);
-
-        // FLUID TAGS
-        if (!fluidTags.isEmpty()) {
-            // Apply fluid tags
-            for (TagKey<Fluid> tag : fluidTags) {
-                reg.registerFluidTag(tag, sourceReg.get());
-            }
-        }
-
-        // LANG OVERRIDE
-        if (customLangName != null) {
-            reg.registerLang("fluid." + reg.getModId() + "." + name, customLangName);
-        }
 
         // 4. Register Bucket Item (optional)
         if (addBucketItem) {

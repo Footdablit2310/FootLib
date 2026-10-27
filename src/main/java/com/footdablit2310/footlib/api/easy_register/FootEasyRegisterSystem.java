@@ -7,11 +7,13 @@ import com.footdablit2310.footlib.api.easy_register.config.TabConfig;
 import com.footdablit2310.footlib.api.easy_register.types.*;
 
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -47,6 +49,7 @@ public final class FootEasyRegisterSystem {
     public final DeferredRegister<FluidType> fluidTypes;
     public final DeferredRegister<Fluid> fluids;
     public final DeferredRegister<MenuType<?>> menus;
+    public final DeferredRegister<SoundEvent> sounds;
 
     private final List<FERCommandEntry> commandEntries = new ArrayList<>();
 
@@ -105,6 +108,7 @@ public final class FootEasyRegisterSystem {
         fluidTypes    = DeferredRegister.create(NeoForgeRegistries.FLUID_TYPES, modId);
         fluids        = DeferredRegister.create(Registries.FLUID, modId);
         menus         = DeferredRegister.create(Registries.MENU, modId);
+        sounds        = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, modId);
 
         blocks.register(bus);
         items.register(bus);
@@ -113,6 +117,7 @@ public final class FootEasyRegisterSystem {
         fluidTypes.register(bus);
         fluids.register(bus);
         menus.register(bus);
+        sounds.register(bus);
 
         // STRICT: Subscribe to creative tab contents event for existing tabs.
         bus.addListener(this::onBuildContents);
@@ -351,6 +356,10 @@ public final class FootEasyRegisterSystem {
         for (FERCommandEntry entry : commandEntries) {
             event.getDispatcher().register(entry.build());
         }
+    }
+
+    public FERSoundEventBuilder soundEvent() {
+        return new FERSoundEventBuilder(this);
     }
 
 }

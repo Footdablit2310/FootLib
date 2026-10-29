@@ -1,3 +1,5 @@
+import java.security.MessageDigest
+
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -163,6 +165,26 @@ ext.gltfEntrypoint = [
         entrypoint: null
 ]
 
+tasks.named("build") {
+    doLast {
+        def jarName = "${mod_id}-${version}-all.jar"
+
+        // Path to the built jar
+        def jar = layout.buildDirectory.file("libs/${jarName}").get().asFile
+
+        // Compute SHA-256
+        def sha256 = MessageDigest.getInstance("SHA-256")
+        jar.withInputStream { is ->
+            sha256.update(is.bytes)
+        }
+        def hash = sha256.digest().encodeHex().toString()
+
+        // Output path: build/libs/checksums/<jar>.sha256
+        def out = layout.buildDirectory.file("libs/checksums/${jarName}.sha256").get().asFile
+        out.parentFile.mkdirs()
+        out.text = hash
+    }
+}
 
 tasks.register("publishToModrinth") {
     group = "publishing"

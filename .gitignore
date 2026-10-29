@@ -39,8 +39,6 @@ runs/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
-runs/
-!**/src/**/runs/
 lib/
 
 # Compiled class file
@@ -75,5 +73,3 @@ replay_pid*
 *.pyc
 *.pyo
 *.pyd
-footpipeline.toml
-run_pipeline.ps1

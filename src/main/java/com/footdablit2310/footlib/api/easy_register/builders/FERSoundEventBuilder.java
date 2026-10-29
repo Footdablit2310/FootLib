@@ -19,7 +19,7 @@ public class FERSoundEventBuilder {
 	 */
 	public DeferredHolder<SoundEvent, SoundEvent> createVariableRangeEvent(@NotNull String soundname) {
 		return FER.sounds.register(
-			FER.getModId(),
+			soundname,
 			() -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(FER.getModId(), soundname))
 		);
 	}
@@ -30,7 +30,7 @@ public class FERSoundEventBuilder {
 	 */
 	public DeferredHolder<SoundEvent, SoundEvent> createFixedRangeEvent(@NotNull String soundname, byte soundrange) {
 		return FER.sounds.register(
-			FER.getModId(),
+			soundname,
 			() -> SoundEvent.createFixedRangeEvent(ResourceLocation.fromNamespaceAndPath(FER.getModId(), soundname), soundrange)
 		);
 	}

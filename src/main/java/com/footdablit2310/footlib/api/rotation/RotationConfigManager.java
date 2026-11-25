@@ -57,13 +57,13 @@ public final class RotationConfigManager implements PreparableReloadListener {
                     JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
                     ResourceLocation blockId = blockIdFromResource(fileId);
                     RotationSettings defaults = parseSettings(requiredObject(json, "default"), null);
-                    Map<Map<String, String>, RotationSettings> overrides = new HashMap<>();
+                    Map<Map<String, String>, RotationSettingsOverride> overrides = new HashMap<>();
 
                     if (json.has("blockstates")) {
                         JsonObject states = requiredObject(json, "blockstates");
                         for (Map.Entry<String, JsonElement> entry : states.entrySet()) {
                             Map<String, String> matcher = parseStateMatcher(entry.getKey());
-                            RotationSettings settings = parseSettings(entry.getValue().getAsJsonObject(), defaults);
+                            RotationSettingsOverride settings = parseOverride(entry.getValue().getAsJsonObject());
                             if (overrides.put(matcher, settings) != null) {
                                 throw new IllegalArgumentException("Duplicate blockstate matcher: " + entry.getKey());
                             }
@@ -104,6 +104,17 @@ public final class RotationConfigManager implements PreparableReloadListener {
         }
         String blockPath = path.substring(prefix.length(), path.length() - ".json".length());
         return ResourceLocation.fromNamespaceAndPath(fileId.getNamespace(), blockPath);
+    }
+
+    private static RotationSettingsOverride parseOverride(JsonObject json) {
+        Boolean enabled = json.has("enabled") ? json.get("enabled").getAsBoolean() : null;
+        Quaterniond rotation = json.has("rotation") ? parseQuaternion(json.getAsJsonArray("rotation")) : null;
+        Vector3d pivot = json.has("pivot") ? parseVector(json.getAsJsonArray("pivot")) : null;
+        Boolean smooth = json.has("smooth") ? json.get("smooth").getAsBoolean() : null;
+        Integer ticks = json.has("interpolation_ticks") ? json.get("interpolation_ticks").getAsInt() : null;
+        Double step = json.has("rotation_step_degrees") ? finite(json.get("rotation_step_degrees")) : null;
+        Set<String> axes = json.has("allowed_axes") ? parseAxes(json.getAsJsonArray("allowed_axes")) : null;
+        return new RotationSettingsOverride(enabled, rotation, pivot, smooth, ticks, step, axes);
     }
 
     private static RotationSettings parseSettings(JsonObject json, RotationSettings inherited) {

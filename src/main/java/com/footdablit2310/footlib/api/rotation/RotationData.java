@@ -98,12 +98,14 @@ public final class RotationData {
         CompoundTag tag = parent.getCompound(NBT_KEY);
         Quaterniond loadedRotation = readQuaternion(tag, "current");
         Quaterniond loadedTarget = readQuaternion(tag, "target");
+        Quaterniond loadedStart = tag.contains("start", Tag.TAG_COMPOUND)
+                ? readQuaternion(tag, "start") : new Quaterniond(loadedRotation);
         set(loadedRotation);
         int duration = tag.getInt("duration");
         int elapsed = tag.getInt("elapsed");
         if (duration > 0 && elapsed < duration) {
             target.set(loadedTarget);
-            start.set(rotation);
+            start.set(loadedStart);
             interpolationDuration = duration;
             interpolationElapsed = Math.max(0, elapsed);
         }
@@ -113,6 +115,7 @@ public final class RotationData {
         CompoundTag tag = new CompoundTag();
         writeQuaternion(tag, "current", rotation);
         writeQuaternion(tag, "target", target);
+        writeQuaternion(tag, "start", start);
         tag.putInt("duration", interpolationDuration);
         tag.putInt("elapsed", interpolationElapsed);
         parent.put(NBT_KEY, tag);

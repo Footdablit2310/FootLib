@@ -20,7 +20,10 @@ public final class RotationBlockConfig {
     /** Applies matching entries from least to most specific, rejecting equal-specificity matches. */
     public RotationSettings resolve(BlockState state) {
         var matching = blockStates.entrySet().stream().filter(e -> matches(state, e.getKey()))
-                .sorted(Comparator.comparing(RotationBlockConfig::specificity, RotationBlockConfig::compareSpecificity))
+                .sorted(Comparator.comparing(
+                        (Map.Entry<Map<String, String>, RotationSettingsOverride> entry) ->
+                                specificity(entry.getKey()),
+                        RotationBlockConfig::compareSpecificity))
                 .toList();
         RotationSettings resolved = defaults;
         Specificity previous = null;

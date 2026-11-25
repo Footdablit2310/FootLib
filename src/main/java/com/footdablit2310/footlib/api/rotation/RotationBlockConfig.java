@@ -1,32 +1,52 @@
 package com.footdablit2310.footlib.api.rotation;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.Set;
+import java.util.Map;
 
-/** Immutable data-driven rules for one BlockEntity-backed block. */
-public record RotationBlockConfig(
-        ResourceLocation block,
-        boolean enabled,
-        double rotationStepDegrees,
-        Set<String> allowedAxes,
-        boolean smooth,
-        int interpolationTicks
-) {
-    public RotationBlockConfig {
-        allowedAxes = Set.copyOf(allowedAxes);
-        if (!Double.isFinite(rotationStepDegrees) || rotationStepDegrees <= 0.0 || rotationStepDegrees > 360.0) {
-            throw new IllegalArgumentException("rotation_step_degrees must be in (0, 360]");
-        }
-        if (interpolationTicks < 0 || interpolationTicks > 1200) {
-            throw new IllegalArgumentException("interpolation_ticks must be between 0 and 1200");
-        }
-        if (allowedAxes.isEmpty() || !Set.of("x", "y", "z").containsAll(allowedAxes)) {
-            throw new IllegalArgumentException("allowed_axes must contain one or more of x, y, z");
-        }
+/** Default settings plus partial BlockState-specific overrides. */
+public final class RotationBlockConfig {
+    private final RotationSettings defaults;
+    private final Map<Map<String, String>, RotationSettings> blockStates;
+
+    public RotationBlockConfig(RotationSettings defaults, Map<Map<String, String>, RotationSettings> blockStates) {
+        this.defaults = defaults;
+        this.blockStates = Map.copyOf(blockStates);
     }
 
-    public boolean allowsAxis(String axis) {
-        return enabled && allowedAxes.contains(axis);
+    public RotationSettings defaults() { return defaults; }
+    public Map<Map<String, String>, RotationSettings> blockStates() { return blockStates; }
+
+    /** Most-specific matching property subset wins; unmatched values inherit from default. */
+    public RotationSettings resolve(BlockState state) {
+        RotationSettings best = defaults;
+        int bestSpecificity = -1;
+        for (Map.Entry<Map<String, String>, RotationSettings> entry : blockStates.entrySet()) {
+            Map<String, String> matcher = entry.getKey();
+            if (matcher.size() > bestSpecificity && matches(state, matcher)) {
+                best = entry.getValue();
+                bestSpecificity = matcher.size();
+            }
+        }
+        return best;
+    }
+
+    private static boolean matches(BlockState state, Map<String, String> matcher) {
+        for (Map.Entry<String, String> expected : matcher.entrySet()) {
+            String actual = getStateProperty(state, expected.getKey());
+            if (actual == null || !actual.equals(expected.getValue())) return false;
+        }
+        return true;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static String getStateProperty(BlockState state, String propertyName) {
+        for (net.minecraft.world.level.block.state.properties.Property property : state.getProperties()) {
+            if (property.getName().equals(propertyName)) {
+                Comparable value = state.getValue(property);
+                return property.getName(value).toLowerCase(java.util.Locale.ROOT);
+            }
+        }
+        return null;
     }
 }

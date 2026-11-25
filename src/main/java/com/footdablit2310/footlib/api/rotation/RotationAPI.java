@@ -59,6 +59,7 @@ public final class RotationAPI {
         Quaterniond combined = addAndNormalize(settings.rotation(), input);
         int duration = settings.smooth() ? settings.interpolationTicks() : 0;
         RotationData data = rotatable.footlib$getRotationData();
+        if (!data.hasCustomRotation()) data.set(settings.rotation());
         data.setLastInput(input);
         data.setTarget(combined, duration);
         notifyChanged(blockEntity);
@@ -114,6 +115,7 @@ public final class RotationAPI {
         Quaterniond effective = getRotation(blockEntity).orElseThrow();
         Quaterniond target = effective.mul(new Quaterniond(deltaRotation)).normalize();
         RotationData data = rotatable.footlib$getRotationData();
+        if (!data.hasCustomRotation()) data.set(effective);
         data.setTarget(target, settings.smooth() ? settings.interpolationTicks() : 0);
         notifyChanged(blockEntity);
         return true;

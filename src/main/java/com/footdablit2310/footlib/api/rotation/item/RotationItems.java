@@ -2,6 +2,7 @@ package com.footdablit2310.footlib.api.rotation.item;
 
 import com.footdablit2310.footlib.FootLib;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /** Registration for FootLib's built-in rotation tool. */
@@ -15,6 +16,6 @@ public final class RotationItems {
         ROTATION_TOOL = FootLib.FER.item(
                 "rotation_tool",
                 () -> new RotationToolItem(new Item.Properties().stacksTo(1))
-        ).register();
+        ).creativeTab(CreativeModeTabs.TOOLS_AND_UTILITIES).register();
     }
 }

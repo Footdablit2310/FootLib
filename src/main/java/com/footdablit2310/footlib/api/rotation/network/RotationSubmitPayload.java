@@ -42,11 +42,11 @@ public record RotationSubmitPayload(BlockPos pos, double x, double y, double z, 
                     .getKey(stack.getItem()).equals(menu.toolItemId())
                     || !(stack.getItem() instanceof RotationToolItem tool)) return;
 
-            if (!(player.level().getBlockEntity(payload.pos()) instanceof RotatableBlockEntity rotatable)) return;
+            net.minecraft.world.level.block.entity.BlockEntity blockEntity = player.level().getBlockEntity(payload.pos());
+            if (!(blockEntity instanceof RotatableBlockEntity)) return;
             try {
                 Quaterniond input = new Quaterniond(payload.x(), payload.y(), payload.z(), payload.w());
-                if (RotationAPI.applyInput((net.minecraft.world.level.block.entity.BlockEntity) rotatable,
-                        input, tool.precisionDegrees())) {
+                if (RotationAPI.applyInput(blockEntity, input, tool.precisionDegrees())) {
                     stack.hurtAndBreak(1, player, menu.toolHand());
                     player.closeContainer();
                 }

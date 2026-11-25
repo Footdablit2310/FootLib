@@ -52,13 +52,13 @@ public final class RotationAPI {
         if (!Double.isFinite(toolPrecisionDegrees) || toolPrecisionDegrees <= 0.0 || toolPrecisionDegrees >= 360.0)
             throw new IllegalArgumentException("Tool precision must be finite and in (0, 360)");
 
-        if (!allowsInput(settings, input)) return false;
+        RotationData data = rotatable.footlib$getRotationData();
+        if (!allowsInput(settings, input, data.getLastInput())) return false;
         double effectiveStep = Math.max(settings.rotationStepDegrees(), toolPrecisionDegrees);
         if (!isMultiple(representedAngleDegrees(input), effectiveStep)) return false;
 
         Quaterniond combined = addAndNormalize(settings.rotation(), input);
         int duration = settings.smooth() ? settings.interpolationTicks() : 0;
-        RotationData data = rotatable.footlib$getRotationData();
         if (!data.hasCustomRotation()) data.set(settings.rotation());
         data.setLastInput(input);
         data.setTarget(combined, duration);
@@ -66,11 +66,11 @@ public final class RotationAPI {
         return true;
     }
 
-    private static boolean allowsInput(RotationSettings settings, Quaterniond input) {
-        return (settings.allowedAxes().contains("x") || Math.abs(input.x) <= PRECISION_TOLERANCE)
-                && (settings.allowedAxes().contains("y") || Math.abs(input.y) <= PRECISION_TOLERANCE)
-                && (settings.allowedAxes().contains("z") || Math.abs(input.z) <= PRECISION_TOLERANCE)
-                && (settings.allowedAxes().contains("w") || Math.abs(input.w - 1.0) <= PRECISION_TOLERANCE);
+    private static boolean allowsInput(RotationSettings settings, Quaterniond input, Quaterniond previous) {
+        return (settings.allowedAxes().contains("x") || Math.abs(input.x - previous.x) <= PRECISION_TOLERANCE)
+                && (settings.allowedAxes().contains("y") || Math.abs(input.y - previous.y) <= PRECISION_TOLERANCE)
+                && (settings.allowedAxes().contains("z") || Math.abs(input.z - previous.z) <= PRECISION_TOLERANCE)
+                && (settings.allowedAxes().contains("w") || Math.abs(input.w - previous.w) <= PRECISION_TOLERANCE);
     }
 
     /** Component-wise addition followed by normalization. */

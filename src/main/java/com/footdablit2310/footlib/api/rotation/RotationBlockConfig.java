@@ -33,6 +33,13 @@ public final class RotationBlockConfig {
         return best;
     }
 
+    public boolean matchesAnyState(Iterable<BlockState> states, Map<String, String> matcher) {
+        for (BlockState state : states) {
+            if (matches(state, matcher)) return true;
+        }
+        return false;
+    }
+
     private static boolean matches(BlockState state, Map<String, String> matcher) {
         for (Map.Entry<String, String> expected : matcher.entrySet()) {
             String actual = getStateProperty(state, expected.getKey());

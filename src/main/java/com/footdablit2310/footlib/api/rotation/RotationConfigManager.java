@@ -82,9 +82,7 @@ public final class RotationConfigManager implements PreparableReloadListener {
                                     + blockId + ": " + matcher);
                         }
                     }
-                    for (BlockState possibleState : possibleStates) {
-                        config.resolve(possibleState); // Also rejects equally-specific ambiguous overrides.
-                    }
+                    for (BlockState possibleState : possibleStates) config.resolve(possibleState);
                     if (loaded.put(blockId, config) != null) {
                         throw new IllegalArgumentException("Duplicate rotation config for " + blockId);
                     }
@@ -102,8 +100,8 @@ public final class RotationConfigManager implements PreparableReloadListener {
         if (!path.startsWith(prefix) || !path.endsWith(".json")) {
             throw new IllegalArgumentException("Unexpected rotation config path: " + fileId);
         }
-        String blockPath = path.substring(prefix.length(), path.length() - ".json".length());
-        return ResourceLocation.fromNamespaceAndPath(fileId.getNamespace(), blockPath);
+        return ResourceLocation.fromNamespaceAndPath(fileId.getNamespace(),
+                path.substring(prefix.length(), path.length() - ".json".length()));
     }
 
     private static RotationSettingsOverride parseOverride(JsonObject json) {
@@ -128,10 +126,10 @@ public final class RotationConfigManager implements PreparableReloadListener {
                 : inherited == null || inherited.smooth();
         int ticks = json.has("interpolation_ticks") ? json.get("interpolation_ticks").getAsInt()
                 : inherited == null ? 10 : inherited.interpolationTicks();
-        double step = json.has("rotation_step_degrees") ? json.get("rotation_step_degrees").getAsDouble()
+        double step = json.has("rotation_step_degrees") ? finite(json.get("rotation_step_degrees"))
                 : inherited == null ? 90.0 : inherited.rotationStepDegrees();
         Set<String> axes = json.has("allowed_axes") ? parseAxes(json.getAsJsonArray("allowed_axes"))
-                : inherited == null ? Set.of("x", "y", "z") : inherited.allowedAxes();
+                : inherited == null ? Set.of("x", "y", "z", "w") : inherited.allowedAxes();
         return new RotationSettings(enabled, rotation, pivot, smooth, ticks, step, axes);
     }
 
@@ -158,9 +156,13 @@ public final class RotationConfigManager implements PreparableReloadListener {
 
     private static Set<String> parseAxes(JsonArray array) {
         Set<String> axes = new HashSet<>();
-        for (JsonElement element : array) axes.add(element.getAsString().toLowerCase(Locale.ROOT));
-        if (axes.isEmpty() || !Set.of("x", "y", "z").containsAll(axes))
-            throw new IllegalArgumentException("allowed_axes must contain one or more of x, y, z");
+        for (JsonElement element : array) {
+            String axis = element.getAsString().toLowerCase(Locale.ROOT);
+            if (!Set.of("x", "y", "z", "w").contains(axis))
+                throw new IllegalArgumentException("allowed_axes entries must be x, y, z, or w");
+            axes.add(axis);
+        }
+        if (axes.isEmpty()) throw new IllegalArgumentException("allowed_axes cannot be empty");
         return Set.copyOf(axes);
     }
 

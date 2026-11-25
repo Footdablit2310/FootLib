@@ -4,6 +4,7 @@ import com.footdablit2310.footlib.api.common.json_config.events.FootLibConfigReg
 import com.footdablit2310.footlib.api.easy_register.FootEasyRegisterSystem;
 import com.footdablit2310.footlib.api.rotation.RotationConfigManager;
 import com.footdablit2310.footlib.api.rotation.item.RotationItems;
+import com.footdablit2310.footlib.api.rotation.network.RotationSubmitPayload;
 import com.footdablit2310.footlib.api.easy_register.config.TabConfig;
 import com.footdablit2310.footlib.json_configs.ModJsonConfigs;
 import com.footdablit2310.footlib.registry.ModRegistry;

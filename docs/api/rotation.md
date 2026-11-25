@@ -71,9 +71,10 @@ All fields are optional inside a blockstate override. Omitted fields inherit the
 - Keys use comma-separated property/value pairs: `facing=north,half=upper`.
 - Property names and values are case-insensitive.
 - An entry matches when every property in its key matches the current BlockState.
-- The matching entry with the greatest number of properties wins.
+- All matching entries are applied from least-specific to most-specific (fewest properties first).
+- Each entry overrides only the fields it explicitly contains; omitted fields inherit from the previous resolved settings.
 - If no entry matches, `default` is used.
-- Use one unambiguous most-specific matching entry for each possible state.
+- Do not create two matching entries with the same number of properties for one possible state; equally-specific matches are rejected as ambiguous.
 
 The JSON loader validates quaternion length, finite numbers, pivot coordinates, axes, and interpolation bounds. Quaternions are normalized when parsed.
 

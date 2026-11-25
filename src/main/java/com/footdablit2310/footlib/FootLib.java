@@ -2,6 +2,9 @@ package com.footdablit2310.footlib;
 
 import com.footdablit2310.footlib.api.common.json_config.events.FootLibConfigRegisterEvent;
 import com.footdablit2310.footlib.api.easy_register.FootEasyRegisterSystem;
+import com.footdablit2310.footlib.api.rotation.RotationConfigManager;
+import com.footdablit2310.footlib.api.rotation.item.RotationItems;
+import com.footdablit2310.footlib.api.rotation.network.RotationSubmitPayload;
 import com.footdablit2310.footlib.api.easy_register.config.TabConfig;
 import com.footdablit2310.footlib.json_configs.ModJsonConfigs;
 import com.footdablit2310.footlib.registry.ModRegistry;
@@ -38,6 +41,9 @@ public final class FootLib {
 
     public FootLib(IEventBus modBus) {
         FER = new FootEasyRegisterSystem("footlib", modBus, "FootLib");
+        RotationItems.register();
+        modBus.addListener(FootLib::onRegisterPayloads);
+        NeoForge.EVENT_BUS.addListener(RotationConfigManager::onAddReloadListeners);
         // Register commands
         NeoForge.EVENT_BUS.addListener(
             FootLibModListCommand::register
@@ -52,8 +58,12 @@ public final class FootLib {
         NeoForge.EVENT_BUS.post(new FootLibConfigRegisterEvent());
 
     }
-    @SubscribeEvent
     public static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
+        event.registrar("1").playToServer(
+                RotationSubmitPayload.TYPE,
+                RotationSubmitPayload.STREAM_CODEC,
+                RotationSubmitPayload::handle
+        );
     }
     @SubscribeEvent
     public static void registerJsonConfigs(FootLibConfigRegisterEvent event) {

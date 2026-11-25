@@ -1,3 +1,11 @@
 {
-  "FootLib": "FootLib"
+  "FootLib": "FootLib",
+  "item.footlib.rotation_tool_copper": "Copper Rotation Tool",
+  "item.footlib.rotation_tool_iron": "Iron Rotation Tool",
+  "item.footlib.rotation_tool_gold": "Gold Rotation Tool",
+  "item.footlib.rotation_tool_amethyst": "Amethyst Rotation Tool",
+  "item.footlib.rotation_tool_diamond": "Diamond Rotation Tool",
+  "item.footlib.rotation_tool_netherite": "Netherite Rotation Tool",
+  "item.footlib.rotation_tool_ultra_netherite": "Ultra Netherite Rotation Tool",
+  "gui.footlib.rotation_editor": "Rotation Editor"
 }

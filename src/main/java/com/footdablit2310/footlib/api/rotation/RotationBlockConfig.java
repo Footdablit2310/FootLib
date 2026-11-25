@@ -19,20 +19,17 @@ public final class RotationBlockConfig {
     public RotationSettings defaults() { return defaults; }
     public Map<Map<String, String>, RotationSettingsOverride> blockStates() { return blockStates; }
 
-    /**
-     * Apply every matching partial override from least to most specific.
-     * More-specific entries replace only the fields they explicitly contain.
-     */
+    /** Apply matching overrides from least to most specific. */
     public RotationSettings resolve(BlockState state) {
         RotationSettings resolved = defaults;
         var matching = blockStates.entrySet().stream()
                 .filter(entry -> matches(state, entry.getKey()))
-                .sorted(Comparator.comparingInt(entry -> entry.getKey().size()))
+                .sorted(Comparator.comparingInt(entry -> specificity(entry.getKey())))
                 .toList();
 
         int previousSpecificity = -1;
         for (var entry : matching) {
-            int specificity = entry.getKey().size();
+            int specificity = specificity(entry.getKey());
             if (specificity == previousSpecificity) {
                 throw new IllegalStateException("Ambiguous FootLib rotation blockstate overrides for " + state);
             }
@@ -40,6 +37,15 @@ public final class RotationBlockConfig {
             previousSpecificity = specificity;
         }
         return resolved;
+    }
+
+    private static int specificity(Map<String, String> matcher) {
+        int score = 0;
+        for (String value : matcher.values()) {
+            if (value.equals("*")) continue;
+            score += value.startsWith("!") ? 1 : 2;
+        }
+        return score;
     }
 
     public boolean matchesAnyState(Iterable<BlockState> states, Map<String, String> matcher) {
@@ -50,7 +56,14 @@ public final class RotationBlockConfig {
     private static boolean matches(BlockState state, Map<String, String> matcher) {
         for (Map.Entry<String, String> expected : matcher.entrySet()) {
             String actual = getStateProperty(state, expected.getKey());
-            if (actual == null || !actual.equals(expected.getValue())) return false;
+            if (actual == null) return false;
+            String wanted = expected.getValue();
+            if (wanted.equals("*")) continue;
+            if (wanted.startsWith("!")) {
+                if (actual.equals(wanted.substring(1))) return false;
+            } else if (!actual.equals(wanted)) {
+                return false;
+            }
         }
         return true;
     }

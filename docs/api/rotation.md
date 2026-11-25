@@ -98,7 +98,7 @@ For an input quaternion `q=(x,y,z,w)`, the represented angle is:
 
 The check is scale-invariant and treats `q` and `-q` as the same rotation. After validation, the input is added component-wise to the configured default quaternion and the combined quaternion is normalized. The configured default is not itself checked against the tool's precision step.
 
-`allowed_axes` controls which editor components may differ from the identity input: a disallowed X/Y/Z component must be zero, and a disallowed W component must be one. The server enforces this regardless of client UI state.
+`allowed_axes` controls which editor components may be changed. A disallowed component must remain equal to its previous submitted value; this lets the editor preserve an existing quaternion component while preventing edits to it. The client makes those fields read-only, and the server independently enforces the same rule.
 
 ## Make a BlockEntity rotatable
 

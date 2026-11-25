@@ -29,6 +29,10 @@ public final class RotationEditorScreen extends AbstractContainerScreen<Rotation
         yField = field(left + 62, top + 35, "Y", menu.initialInput().y);
         zField = field(left + 112, top + 35, "Z", menu.initialInput().z);
         wField = field(left + 162, top + 35, "W", menu.initialInput().w);
+        xField.setEditable(menu.allowedAxes().contains("x"));
+        yField.setEditable(menu.allowedAxes().contains("y"));
+        zField.setEditable(menu.allowedAxes().contains("z"));
+        wField.setEditable(menu.allowedAxes().contains("w"));
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> submit())
                 .bounds(left + 112, top + 92, 96, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("gui.cancel"), button -> onClose())

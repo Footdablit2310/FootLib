@@ -26,6 +26,8 @@ public final class RotationBlockConfig {
             if (matcher.size() > bestSpecificity && matches(state, matcher)) {
                 best = entry.getValue();
                 bestSpecificity = matcher.size();
+            } else if (matcher.size() == bestSpecificity && bestSpecificity >= 0 && matches(state, matcher)) {
+                throw new IllegalStateException("Ambiguous FootLib rotation blockstate overrides for " + state);
             }
         }
         return best;

@@ -42,6 +42,7 @@ public final class FootLib {
     public FootLib(IEventBus modBus) {
         FER = new FootEasyRegisterSystem("footlib", modBus, "FootLib");
         RotationItems.register();
+        modBus.addListener(FootLib::onRegisterPayloads);
         NeoForge.EVENT_BUS.addListener(RotationConfigManager::onAddReloadListeners);
         // Register commands
         NeoForge.EVENT_BUS.addListener(

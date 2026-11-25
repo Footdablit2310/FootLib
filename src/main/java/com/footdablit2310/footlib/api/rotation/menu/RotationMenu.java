@@ -8,6 +8,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 import org.joml.Quaterniond;
 
 import java.util.Set;
@@ -51,6 +52,12 @@ public final class RotationMenu extends AbstractContainerMenu {
     public InteractionHand toolHand() { return toolHand; }
     public ResourceLocation toolItemId() { return toolItemId; }
     public Set<String> allowedAxes() { return allowedAxes; }
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+        // This menu has no inventory slots; all input is sent through its payload.
+        return ItemStack.EMPTY;
+    }
 
     @Override
     public boolean stillValid(Player player) {

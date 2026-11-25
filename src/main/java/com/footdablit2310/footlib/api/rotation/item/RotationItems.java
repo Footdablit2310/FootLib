@@ -21,7 +21,8 @@ public final class RotationItems {
     private RotationItems() {}
 
     public static void register() {
-        ROTATION_MENU = FootLib.FER.menu("rotation_editor").factory(RotationMenu::new).register();
+        ROTATION_MENU = FootLib.FER.<RotationMenu>menu("rotation_editor")
+                .factory(RotationMenu::new).register();
         COPPER = register("rotation_tool_copper", 22.5, 1024);
         IRON = register("rotation_tool_iron", 11.25, 2048);
         GOLD = register("rotation_tool_gold", 5.0, 512);

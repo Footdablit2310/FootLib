@@ -64,7 +64,25 @@ public final class RotationAPI {
         }
 
         Quaterniond result = current.get().mul(new Quaterniond(deltaRotation)).normalize();
-        return setRotation(blockEntity, result);
+        if (!(blockEntity instanceof RotatableBlockEntity rotatable)) {
+            return false;
+        }
+        Level level = blockEntity.getLevel();
+        if (level != null && level.isClientSide()) {
+            return false;
+        }
+
+        net.minecraft.resources.ResourceLocation blockId =
+                net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(blockEntity.getBlockState().getBlock());
+        RotationBlockConfig config = RotationConfigManager.get(blockId);
+        int duration = config != null && config.smooth() ? config.interpolationTicks() : 0;
+        rotatable.footlib$getRotationData().setTarget(result, duration);
+        blockEntity.setChanged();
+        if (level != null) {
+            BlockPos pos = blockEntity.getBlockPos();
+            level.sendBlockUpdated(pos, blockEntity.getBlockState(), blockEntity.getBlockState(), 3);
+        }
+        return true;
     }
 
     public static boolean approximatelyEquals(Quaterniond first, Quaterniond second) {

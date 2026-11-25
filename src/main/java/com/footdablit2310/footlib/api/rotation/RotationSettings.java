@@ -18,6 +18,12 @@ public final class RotationSettings {
     public RotationSettings(boolean enabled, Quaterniond rotation, Vector3d pivot,
             boolean smooth, int interpolationTicks, double rotationStepDegrees, Set<String> allowedAxes) {
         this.enabled = enabled;
+        if (rotation == null || !Double.isFinite(rotation.lengthSquared()) || rotation.lengthSquared() < 1.0E-24) {
+            throw new IllegalArgumentException("rotation quaternion must be finite and non-zero");
+        }
+        if (pivot == null || allowedAxes == null) {
+            throw new IllegalArgumentException("pivot and allowedAxes cannot be null");
+        }
         this.rotation = new Quaterniond(rotation).normalize();
         this.pivot = new Vector3d(pivot);
         this.smooth = smooth;

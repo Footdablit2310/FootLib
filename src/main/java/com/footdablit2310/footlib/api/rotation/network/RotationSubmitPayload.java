@@ -12,6 +12,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.joml.Quaterniond;
 
@@ -47,7 +48,9 @@ public record RotationSubmitPayload(BlockPos pos, double x, double y, double z, 
             try {
                 Quaterniond input = new Quaterniond(payload.x(), payload.y(), payload.z(), payload.w());
                 if (RotationAPI.applyInput(blockEntity, input, tool.precisionDegrees())) {
-                    stack.hurtAndBreak(1, player, menu.toolHand());
+                    EquipmentSlot slot = menu.toolHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+                            ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+                    stack.hurtAndBreak(1, player, slot);
                     player.closeContainer();
                 }
             } catch (IllegalArgumentException ignored) {

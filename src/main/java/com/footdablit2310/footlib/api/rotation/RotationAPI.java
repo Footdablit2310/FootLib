@@ -65,10 +65,15 @@ public final class RotationAPI {
     }
 
     public static boolean approximatelyEquals(Quaterniond first, Quaterniond second) {
-        return Math.abs(first.x - second.x) <= PRECISION_TOLERANCE
+        boolean sameSign = Math.abs(first.x - second.x) <= PRECISION_TOLERANCE
                 && Math.abs(first.y - second.y) <= PRECISION_TOLERANCE
                 && Math.abs(first.z - second.z) <= PRECISION_TOLERANCE
                 && Math.abs(first.w - second.w) <= PRECISION_TOLERANCE;
+        boolean oppositeSign = Math.abs(first.x + second.x) <= PRECISION_TOLERANCE
+                && Math.abs(first.y + second.y) <= PRECISION_TOLERANCE
+                && Math.abs(first.z + second.z) <= PRECISION_TOLERANCE
+                && Math.abs(first.w + second.w) <= PRECISION_TOLERANCE;
+        return sameSign || oppositeSign;
     }
 
     private static Quaterniond baseRotation(BlockEntity blockEntity) {

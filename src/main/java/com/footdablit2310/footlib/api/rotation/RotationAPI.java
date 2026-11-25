@@ -31,6 +31,20 @@ public final class RotationAPI {
         return Optional.of(rotatable.getRotation());
     }
 
+    /** Returns the destination quaternion when a smooth rotation is in progress. */
+    public static Optional<Quaterniond> getTargetRotation(BlockEntity blockEntity) {
+        if (!(blockEntity instanceof RotatableBlockEntity rotatable)) {
+            return Optional.empty();
+        }
+        return Optional.of(rotatable.footlib$getRotationData().getTarget());
+    }
+
+    /** Returns whether the BlockEntity is currently interpolating. */
+    public static boolean isInterpolating(BlockEntity blockEntity) {
+        return blockEntity instanceof RotatableBlockEntity rotatable
+                && rotatable.footlib$getRotationData().isInterpolating();
+    }
+
     /**
      * Sets the BlockEntity rotation. The caller should invoke this on the
      * logical server; a block update is sent so tracking clients re-render.

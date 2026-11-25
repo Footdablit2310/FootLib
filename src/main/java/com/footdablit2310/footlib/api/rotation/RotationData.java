@@ -12,6 +12,7 @@ public final class RotationData {
     public static final String NBT_KEY = "FootLibRotation";
     private final Quaterniond rotation = new Quaterniond();
     private final Quaterniond target = new Quaterniond();
+    private final Quaterniond start = new Quaterniond();
     private int interpolationDuration;
     private int interpolationElapsed;
 
@@ -37,6 +38,7 @@ public final class RotationData {
         validate(value);
         rotation.set(value).normalize();
         target.set(rotation);
+        start.set(rotation);
         interpolationDuration = 0;
         interpolationElapsed = 0;
     }
@@ -47,6 +49,7 @@ public final class RotationData {
         if (durationTicks < 0) {
             throw new IllegalArgumentException("durationTicks cannot be negative");
         }
+        start.set(rotation);
         target.set(value).normalize();
         interpolationDuration = durationTicks;
         interpolationElapsed = 0;
@@ -62,7 +65,7 @@ public final class RotationData {
         }
         interpolationElapsed++;
         double alpha = (double) interpolationElapsed / interpolationDuration;
-        rotation.slerp(target, alpha).normalize();
+        rotation.set(start).slerp(target, alpha).normalize();
         if (interpolationElapsed >= interpolationDuration) {
             rotation.set(target);
             interpolationDuration = 0;
@@ -99,6 +102,7 @@ public final class RotationData {
         int elapsed = tag.getInt("elapsed");
         if (duration > 0 && elapsed < duration) {
             target.set(loadedTarget);
+            start.set(rotation);
             interpolationDuration = duration;
             interpolationElapsed = Math.max(0, elapsed);
         }

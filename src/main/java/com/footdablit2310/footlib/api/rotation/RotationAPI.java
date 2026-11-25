@@ -55,11 +55,17 @@ public final class RotationAPI {
         if (!isMultiple(angle, effectiveStep)) return false;
 
         Quaterniond combined = addAndNormalize(settings.rotation(), input);
-        Quaterniond offset = settings.rotation().invert().mul(combined).normalize();
+        Quaterniond offset = new Quaterniond(input);
         int duration = settings.smooth() ? settings.interpolationTicks() : 0;
         rotatable.footlib$getRotationData().setTarget(offset, duration);
         notifyChanged(blockEntity);
         return true;
+    }
+
+    /** Finds a component offset which, when added to the base, yields target. */
+    private static Quaterniond subtract(Quaterniond base, Quaterniond target) {
+        return new Quaterniond(target.x - base.x, target.y - base.y,
+                target.z - base.z, target.w - base.w);
     }
 
     /** Component-wise quaternion addition followed by normalization. */
@@ -91,7 +97,7 @@ public final class RotationAPI {
     public static boolean setRotation(BlockEntity blockEntity, Quaterniond rotation) {
         if (!(blockEntity instanceof RotatableBlockEntity rotatable) || !isServerSide(blockEntity)) return false;
         validateInput(rotation);
-        Quaterniond offset = baseRotation(blockEntity).invert().mul(new Quaterniond(rotation)).normalize();
+        Quaterniond offset = subtract(baseRotation(blockEntity), new Quaterniond(rotation));
         rotatable.setRotation(offset);
         notifyChanged(blockEntity);
         return true;
@@ -104,8 +110,7 @@ public final class RotationAPI {
 
         Quaterniond effective = addAndNormalize(baseRotation(blockEntity), rotatable.getRotation());
         Quaterniond targetEffective = effective.mul(new Quaterniond(deltaRotation)).normalize();
-        Quaterniond targetOffset = baseRotation(blockEntity).invert()
-                .mul(targetEffective).normalize();
+        Quaterniond targetOffset = subtract(baseRotation(blockEntity), targetEffective);
 
         RotationSettings settings = RotationConfigManager.getSettings(blockEntity.getBlockState());
         int duration = settings != null && settings.smooth() ? settings.interpolationTicks() : 0;

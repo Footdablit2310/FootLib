@@ -1,6 +1,7 @@
 package com.footdablit2310.footlib.api.rotation;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import org.joml.Quaterniond;
 import org.joml.Quaterniondc;
 
@@ -89,7 +90,7 @@ public final class RotationData {
     }
 
     public void load(CompoundTag parent) {
-        if (!parent.contains(NBT_KEY, CompoundTag.TAG_COMPOUND)) {
+        if (!parent.contains(NBT_KEY, Tag.TAG_COMPOUND)) {
             set(new Quaterniond());
             return;
         }

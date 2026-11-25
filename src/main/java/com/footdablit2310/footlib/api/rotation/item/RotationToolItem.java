@@ -39,7 +39,7 @@ public class RotationToolItem extends Item {
             return InteractionResult.PASS;
         }
 
-        boolean rotateX = context.getPlayer() != null && context.getPlayer().isCrou crouching();
+        boolean rotateX = context.getPlayer() != null && context.getPlayer().isCrouching();
         String axis = rotateX ? "x" : "y";
         if (!config.allowsAxis(axis)) {
             return InteractionResult.FAIL;

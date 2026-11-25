@@ -1,29 +1,34 @@
 package com.footdablit2310.footlib.api.rotation;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.joml.Quaterniond;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 
-/**
- * Rendering adapter. Rotation remains double precision until the final
- * PoseStack boundary, where Minecraft's rendering quaternion is float-based.
- */
+/** Rendering adapter; all stored rotation math stays double precision. */
 public final class RotationRenderHelper {
-    private RotationRenderHelper() {
-    }
+    private RotationRenderHelper() {}
 
     /**
-     * Applies a quaternion around a block-local pivot expressed in block units.
-     * Call after translating the pose stack to the block's world origin.
+     * Resolves both quaternion and pivot from the BlockEntity's current
+     * BlockState. Call after translating the PoseStack to the block origin.
      */
+    public static boolean apply(PoseStack poseStack, BlockEntity blockEntity) {
+        var rotation = RotationAPI.getRotation(blockEntity);
+        if (rotation.isEmpty()) return false;
+        RotationSettings settings = RotationConfigManager.getSettings(blockEntity.getBlockState());
+        Vector3d pivot = settings == null ? new Vector3d(0.5, 0.5, 0.5) : settings.pivot();
+        apply(poseStack, rotation.get(), pivot);
+        return true;
+    }
+
+    /** Applies a quaternion around a block-local pivot expressed in block units. */
     public static void apply(PoseStack poseStack, Quaterniond rotation, Vector3d pivot) {
         poseStack.translate(pivot.x, pivot.y, pivot.z);
         poseStack.mulPose(new Quaternionf(
-                (float) rotation.x,
-                (float) rotation.y,
-                (float) rotation.z,
-                (float) rotation.w
+                (float) rotation.x, (float) rotation.y,
+                (float) rotation.z, (float) rotation.w
         ));
         poseStack.translate(-pivot.x, -pivot.y, -pivot.z);
     }

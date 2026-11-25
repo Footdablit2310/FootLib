@@ -29,123 +29,97 @@ public final class RotationConfigManager implements PreparableReloadListener {
     private static final AtomicReference<Map<ResourceLocation, RotationBlockConfig>> CONFIGS =
             new AtomicReference<>(Map.of());
 
-    public static void onAddReloadListeners(AddReloadListenerEvent event) {
-        event.addListener(new RotationConfigManager());
-    }
-
-    public static RotationBlockConfig get(ResourceLocation blockId) {
-        return CONFIGS.get().get(blockId);
-    }
+    public static void onAddReloadListeners(AddReloadListenerEvent event) { event.addListener(new RotationConfigManager()); }
+    public static RotationBlockConfig get(ResourceLocation blockId) { return CONFIGS.get().get(blockId); }
 
     public static RotationSettings getSettings(BlockState state) {
-        ResourceLocation blockId = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        RotationBlockConfig config = get(blockId);
+        ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        RotationBlockConfig config = get(id);
         return config == null ? null : config.resolve(state);
     }
 
     @Override
-    public CompletableFuture<Void> reload(PreparationBarrier barrier, ResourceManager resourceManager,
+    public CompletableFuture<Void> reload(PreparationBarrier barrier, ResourceManager manager,
             ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler,
             Executor backgroundExecutor, Executor gameExecutor) {
         return CompletableFuture.supplyAsync(() -> {
             Map<ResourceLocation, RotationBlockConfig> loaded = new HashMap<>();
-            Map<ResourceLocation, Resource> resources =
-                    resourceManager.listResources("footlib_rotation", id -> id.getPath().endsWith(".json"));
-
+            Map<ResourceLocation, Resource> resources = manager.listResources("footlib_rotation",
+                    id -> id.getPath().endsWith(".json"));
             resources.forEach((fileId, resource) -> {
                 try (Reader reader = resource.openAsReader()) {
                     JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
                     ResourceLocation blockId = blockIdFromResource(fileId);
-                    RotationSettings defaults = parseSettings(requiredObject(json, "default"), null);
+                    RotationSettings defaults = parseDefaults(requiredObject(json, "default"));
                     Map<Map<String, String>, RotationSettingsOverride> overrides = new HashMap<>();
-
                     if (json.has("blockstates")) {
                         JsonObject states = requiredObject(json, "blockstates");
                         for (Map.Entry<String, JsonElement> entry : states.entrySet()) {
                             Map<String, String> matcher = parseStateMatcher(entry.getKey());
-                            RotationSettingsOverride settings = parseOverride(entry.getValue().getAsJsonObject());
-                            if (overrides.put(matcher, settings) != null) {
+                            if (!entry.getValue().isJsonObject()) throw new IllegalArgumentException("Blockstate override must be an object");
+                            RotationSettingsOverride patch = parseOverride(entry.getValue().getAsJsonObject());
+                            if (overrides.put(matcher, patch) != null)
                                 throw new IllegalArgumentException("Duplicate blockstate matcher: " + entry.getKey());
-                            }
                         }
                     }
-
-                    if (!net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(blockId)) {
+                    if (!net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(blockId))
                         throw new IllegalArgumentException("Unknown block registry ID: " + blockId);
-                    }
                     RotationBlockConfig config = new RotationBlockConfig(defaults, overrides);
-                    var possibleStates = net.minecraft.core.registries.BuiltInRegistries.BLOCK
-                            .get(blockId).getStateDefinition().getPossibleStates();
+                    var states = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(blockId)
+                            .getStateDefinition().getPossibleStates();
                     for (Map<String, String> matcher : overrides.keySet()) {
-                        if (!config.matchesAnyState(possibleStates, matcher)) {
-                            throw new IllegalArgumentException("Blockstate matcher does not match any state of "
-                                    + blockId + ": " + matcher);
-                        }
+                        validateMatcher(states, matcher);
+                        if (!config.matchesAnyState(states, matcher))
+                            throw new IllegalArgumentException("Blockstate matcher matches no state of " + blockId + ": " + matcher);
                     }
-                    for (BlockState possibleState : possibleStates) config.resolve(possibleState);
-                    if (loaded.put(blockId, config) != null) {
+                    for (BlockState state : states) config.resolve(state);
+                    if (loaded.put(blockId, config) != null)
                         throw new IllegalArgumentException("Duplicate rotation config for " + blockId);
-                    }
-                } catch (Exception exception) {
-                    throw new IllegalStateException("Invalid FootLib rotation config: " + fileId, exception);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Invalid FootLib rotation config: " + fileId, e);
                 }
             });
             return Map.copyOf(loaded);
         }, backgroundExecutor).thenCompose(barrier::wait).thenAcceptAsync(CONFIGS::set, gameExecutor);
     }
 
-    private static ResourceLocation blockIdFromResource(ResourceLocation fileId) {
-        String prefix = "footlib_rotation/";
-        String path = fileId.getPath();
-        if (!path.startsWith(prefix) || !path.endsWith(".json")) {
-            throw new IllegalArgumentException("Unexpected rotation config path: " + fileId);
-        }
-        return ResourceLocation.fromNamespaceAndPath(fileId.getNamespace(),
-                path.substring(prefix.length(), path.length() - ".json".length()));
+    private static RotationSettings parseDefaults(JsonObject json) {
+        String[] required = {"enabled", "rotation", "pivot", "smooth", "interpolation_ticks",
+                "rotation_step_degrees", "allowed_axes"};
+        for (String key : required) if (!json.has(key)) throw new IllegalArgumentException("Missing required default field: " + key);
+        return new RotationSettings(json.get("enabled").getAsBoolean(), parseQuaternion(json.getAsJsonArray("rotation")),
+                parseVector(json.getAsJsonArray("pivot")), json.get("smooth").getAsBoolean(),
+                json.get("interpolation_ticks").getAsInt(), finite(json.get("rotation_step_degrees")),
+                parseAxes(json.getAsJsonArray("allowed_axes")));
     }
 
     private static RotationSettingsOverride parseOverride(JsonObject json) {
-        Boolean enabled = json.has("enabled") ? json.get("enabled").getAsBoolean() : null;
-        Quaterniond rotation = json.has("rotation") ? parseQuaternion(json.getAsJsonArray("rotation")) : null;
-        Vector3d pivot = json.has("pivot") ? parseVector(json.getAsJsonArray("pivot")) : null;
-        Boolean smooth = json.has("smooth") ? json.get("smooth").getAsBoolean() : null;
-        Integer ticks = json.has("interpolation_ticks") ? json.get("interpolation_ticks").getAsInt() : null;
-        Double step = json.has("rotation_step_degrees") ? finite(json.get("rotation_step_degrees")) : null;
-        Set<String> axes = json.has("allowed_axes") ? parseAxes(json.getAsJsonArray("allowed_axes")) : null;
-        return new RotationSettingsOverride(enabled, rotation, pivot, smooth, ticks, step, axes);
-    }
-
-    private static RotationSettings parseSettings(JsonObject json, RotationSettings inherited) {
-        boolean enabled = json.has("enabled") ? json.get("enabled").getAsBoolean()
-                : inherited == null || inherited.enabled();
-        Quaterniond rotation = json.has("rotation") ? parseQuaternion(json.getAsJsonArray("rotation"))
-                : inherited == null ? new Quaterniond() : inherited.rotation();
-        Vector3d pivot = json.has("pivot") ? parseVector(json.getAsJsonArray("pivot"))
-                : inherited == null ? new Vector3d(0.5, 0.5, 0.5) : inherited.pivot();
-        boolean smooth = json.has("smooth") ? json.get("smooth").getAsBoolean()
-                : inherited == null || inherited.smooth();
-        int ticks = json.has("interpolation_ticks") ? json.get("interpolation_ticks").getAsInt()
-                : inherited == null ? 10 : inherited.interpolationTicks();
-        double step = json.has("rotation_step_degrees") ? finite(json.get("rotation_step_degrees"))
-                : inherited == null ? 90.0 : inherited.rotationStepDegrees();
-        Set<String> axes = json.has("allowed_axes") ? parseAxes(json.getAsJsonArray("allowed_axes"))
-                : inherited == null ? Set.of("x", "y", "z", "w") : inherited.allowedAxes();
-        return new RotationSettings(enabled, rotation, pivot, smooth, ticks, step, axes);
+        return new RotationSettingsOverride(
+                json.has("enabled") ? json.get("enabled").getAsBoolean() : null,
+                json.has("rotation") ? parseQuaternion(json.getAsJsonArray("rotation")) : null,
+                json.has("pivot") ? parseVector(json.getAsJsonArray("pivot")) : null,
+                json.has("smooth") ? json.get("smooth").getAsBoolean() : null,
+                json.has("interpolation_ticks") ? json.get("interpolation_ticks").getAsInt() : null,
+                json.has("rotation_step_degrees") ? finite(json.get("rotation_step_degrees")) : null,
+                json.has("allowed_axes") ? parseAxes(json.getAsJsonArray("allowed_axes")) : null);
     }
 
     private static Quaterniond parseQuaternion(JsonArray array) {
-        if (array.size() != 4) throw new IllegalArgumentException("rotation must contain [x, y, z, w]");
+        if (array == null || array.size() != 4) throw new IllegalArgumentException("rotation must contain [x, y, z, w]");
         Quaterniond q = new Quaterniond(finite(array.get(0)), finite(array.get(1)),
                 finite(array.get(2)), finite(array.get(3)));
-        double lengthSquared = q.lengthSquared();
-        if (lengthSquared < 1.0E-24 || !Double.isFinite(lengthSquared))
-            throw new IllegalArgumentException("rotation quaternion must be finite and non-zero");
+        validateQuaternion(q);
         return q.normalize();
     }
 
     private static Vector3d parseVector(JsonArray array) {
-        if (array.size() != 3) throw new IllegalArgumentException("pivot must contain [x, y, z]");
+        if (array == null || array.size() != 3) throw new IllegalArgumentException("pivot must contain [x, y, z]");
         return new Vector3d(finite(array.get(0)), finite(array.get(1)), finite(array.get(2)));
+    }
+
+    private static void validateQuaternion(Quaterniond q) {
+        if (!Double.isFinite(q.lengthSquared()) || q.lengthSquared() < 1.0E-24)
+            throw new IllegalArgumentException("Quaternion must be finite and non-zero");
     }
 
     private static double finite(JsonElement element) {
@@ -155,11 +129,11 @@ public final class RotationConfigManager implements PreparableReloadListener {
     }
 
     private static Set<String> parseAxes(JsonArray array) {
+        if (array == null) throw new IllegalArgumentException("allowed_axes must be an array");
         Set<String> axes = new HashSet<>();
-        for (JsonElement element : array) {
-            String axis = element.getAsString().toLowerCase(Locale.ROOT);
-            if (!Set.of("x", "y", "z", "w").contains(axis))
-                throw new IllegalArgumentException("allowed_axes entries must be x, y, z, or w");
+        for (JsonElement e : array) {
+            String axis = e.getAsString().toLowerCase(Locale.ROOT);
+            if (!Set.of("x", "y", "z", "w").contains(axis)) throw new IllegalArgumentException("allowed_axes entries must be x, y, z, or w");
             axes.add(axis);
         }
         if (axes.isEmpty()) throw new IllegalArgumentException("allowed_axes cannot be empty");
@@ -172,17 +146,51 @@ public final class RotationConfigManager implements PreparableReloadListener {
             String[] pair = part.trim().split("=", 2);
             if (pair.length != 2 || pair[0].isBlank() || pair[1].isBlank())
                 throw new IllegalArgumentException("Invalid blockstate matcher: " + text);
-            String property = pair[0].trim().toLowerCase(Locale.ROOT);
+            String key = pair[0].trim().toLowerCase(Locale.ROOT);
             String value = pair[1].trim().toLowerCase(Locale.ROOT);
-            if (matcher.put(property, value) != null)
-                throw new IllegalArgumentException("Duplicate property in blockstate matcher: " + text);
+            if (matcher.put(key, value) != null) throw new IllegalArgumentException("Duplicate property: " + key);
         }
+        if (matcher.isEmpty()) throw new IllegalArgumentException("Empty blockstate matcher");
         return Map.copyOf(matcher);
     }
 
+    private static void validateMatcher(Iterable<BlockState> states, Map<String, String> matcher) {
+        for (String property : matcher.keySet()) {
+            boolean found = false;
+            Set<String> values = new HashSet<>();
+            for (BlockState state : states) {
+                for (var p : state.getProperties()) {
+                    if (p.getName().equals(property)) {
+                        found = true;
+                        values.add(propertyValue(state, p));
+                    }
+                }
+            }
+            if (!found) throw new IllegalArgumentException("Unknown blockstate property: " + property);
+            String wanted = matcher.get(property);
+            if (!wanted.equals("*")) {
+                String value = wanted.startsWith("!") ? wanted.substring(1) : wanted;
+                if (!values.contains(value)) throw new IllegalArgumentException("Unknown value '" + value + "' for property " + property);
+            }
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static String propertyValue(BlockState state, net.minecraft.world.level.block.state.properties.Property property) {
+        Comparable value = state.getValue(property);
+        return property.getName(value).toLowerCase(Locale.ROOT);
+    }
+
+    private static ResourceLocation blockIdFromResource(ResourceLocation fileId) {
+        String prefix = "footlib_rotation/";
+        String path = fileId.getPath();
+        if (!path.startsWith(prefix) || !path.endsWith(".json")) throw new IllegalArgumentException("Unexpected path: " + fileId);
+        return ResourceLocation.fromNamespaceAndPath(fileId.getNamespace(),
+                path.substring(prefix.length(), path.length() - ".json".length()));
+    }
+
     private static JsonObject requiredObject(JsonObject json, String key) {
-        if (!json.has(key) || !json.get(key).isJsonObject())
-            throw new IllegalArgumentException("Missing object field: " + key);
+        if (!json.has(key) || !json.get(key).isJsonObject()) throw new IllegalArgumentException("Missing object field: " + key);
         return json.getAsJsonObject(key);
     }
 }

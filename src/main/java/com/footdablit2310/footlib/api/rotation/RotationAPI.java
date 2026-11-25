@@ -17,20 +17,17 @@ public final class RotationAPI {
         return blockEntity instanceof RotatableBlockEntity;
     }
 
-    /**
-     * Returns the effective rotation: the resolved JSON blockstate base
-     * quaternion multiplied by the BlockEntity's mutable quaternion offset.
-     */
+    /** Returns the configured default quaternion plus the stored user offset. */
     public static Optional<Quaterniond> getRotation(BlockEntity blockEntity) {
         if (!(blockEntity instanceof RotatableBlockEntity rotatable)) return Optional.empty();
         Quaterniond base = baseRotation(blockEntity);
-        return Optional.of(base.mul(rotatable.getRotation()).normalize());
+        return Optional.of(addAndNormalize(base, rotatable.getRotation()));
     }
 
     public static Optional<Quaterniond> getTargetRotation(BlockEntity blockEntity) {
         if (!(blockEntity instanceof RotatableBlockEntity rotatable)) return Optional.empty();
-        Quaterniond base = baseRotation(blockEntity);
-        return Optional.of(base.mul(rotatable.footlib$getRotationData().getTarget()).normalize());
+        return Optional.of(addAndNormalize(baseRotation(blockEntity),
+                rotatable.footlib$getRotationData().getTarget()));
     }
 
     public static boolean isInterpolating(BlockEntity blockEntity) {
@@ -38,24 +35,77 @@ public final class RotationAPI {
                 && rotatable.footlib$getRotationData().isInterpolating();
     }
 
+    /**
+     * Validates the user-entered quaternion against the stricter of the block
+     * step and tool precision, adds it component-wise to the JSON default,
+     * normalizes the result, and stores the resulting offset.
+     */
+    public static boolean applyInput(BlockEntity blockEntity, Quaterniond input, double toolPrecisionDegrees) {
+        if (!(blockEntity instanceof RotatableBlockEntity rotatable) || !isServerSide(blockEntity)) return false;
+        RotationSettings settings = RotationConfigManager.getSettings(blockEntity.getBlockState());
+        if (settings == null || !settings.enabled()) return false;
+        validateInput(input);
+
+        if (!Double.isFinite(toolPrecisionDegrees) || toolPrecisionDegrees <= 0.0 || toolPrecisionDegrees >= 360.0) {
+            throw new IllegalArgumentException("Tool precision must be finite and in (0, 360)");
+        }
+
+        double effectiveStep = Math.max(settings.rotationStepDegrees(), toolPrecisionDegrees);
+        double angle = representedAngleDegrees(input);
+        if (!isMultiple(angle, effectiveStep)) return false;
+
+        Quaterniond combined = addAndNormalize(settings.rotation(), input);
+        Quaterniond offset = settings.rotation().invert().mul(combined).normalize();
+        int duration = settings.smooth() ? settings.interpolationTicks() : 0;
+        rotatable.footlib$getRotationData().setTarget(offset, duration);
+        notifyChanged(blockEntity);
+        return true;
+    }
+
+    /** Component-wise quaternion addition followed by normalization. */
+    public static Quaterniond addAndNormalize(Quaterniond first, Quaterniond second) {
+        Quaterniond result = new Quaterniond(
+                first.x + second.x, first.y + second.y,
+                first.z + second.z, first.w + second.w
+        );
+        validateInput(result);
+        return result.normalize();
+    }
+
+    /** Returns the represented shortest rotation angle in [0, 180] degrees. */
+    public static double representedAngleDegrees(Quaterniond quaternion) {
+        validateInput(quaternion);
+        double vectorLength = Math.sqrt(quaternion.x * quaternion.x
+                + quaternion.y * quaternion.y + quaternion.z * quaternion.z);
+        return Math.toDegrees(2.0 * Math.atan2(vectorLength, Math.abs(quaternion.w)));
+    }
+
+    private static boolean isMultiple(double angle, double step) {
+        double quotient = angle / step;
+        double nearest = Math.rint(quotient);
+        double tolerance = Math.max(1.0E-9, Math.abs(quotient) * 1.0E-10);
+        return Math.abs(quotient - nearest) <= tolerance;
+    }
+
     /** Sets an absolute effective rotation, accounting for the JSON base rotation. */
     public static boolean setRotation(BlockEntity blockEntity, Quaterniond rotation) {
         if (!(blockEntity instanceof RotatableBlockEntity rotatable) || !isServerSide(blockEntity)) return false;
-        validate(rotation);
+        validateInput(rotation);
         Quaterniond offset = baseRotation(blockEntity).invert().mul(new Quaterniond(rotation)).normalize();
         rotatable.setRotation(offset);
         notifyChanged(blockEntity);
         return true;
     }
 
-    /** Applies a local-space delta: effectiveRotation * deltaRotation. */
+    /** Applies a local-space delta using quaternion multiplication. */
     public static boolean rotate(BlockEntity blockEntity, Quaterniond deltaRotation) {
         if (!(blockEntity instanceof RotatableBlockEntity rotatable) || !isServerSide(blockEntity)) return false;
-        validate(deltaRotation);
+        validateInput(deltaRotation);
 
-        Quaterniond effective = baseRotation(blockEntity).mul(rotatable.getRotation()).normalize();
+        Quaterniond effective = addAndNormalize(baseRotation(blockEntity), rotatable.getRotation());
         Quaterniond targetEffective = effective.mul(new Quaterniond(deltaRotation)).normalize();
-        Quaterniond targetOffset = baseRotation(blockEntity).invert().mul(targetEffective).normalize();
+        Quaterniond targetOffset = baseRotation(blockEntity).invert()
+                .mul(targetEffective).normalize();
 
         RotationSettings settings = RotationConfigManager.getSettings(blockEntity.getBlockState());
         int duration = settings != null && settings.smooth() ? settings.interpolationTicks() : 0;
@@ -86,8 +136,10 @@ public final class RotationAPI {
         return level == null || !level.isClientSide();
     }
 
-    private static void validate(Quaterniond value) {
-        if (value == null || !Double.isFinite(value.lengthSquared()) || value.lengthSquared() < 1.0E-24) {
+    private static void validateInput(Quaterniond value) {
+        if (value == null || !Double.isFinite(value.x) || !Double.isFinite(value.y)
+                || !Double.isFinite(value.z) || !Double.isFinite(value.w)
+                || !Double.isFinite(value.lengthSquared()) || value.lengthSquared() < 1.0E-24) {
             throw new IllegalArgumentException("Rotation quaternion must be finite and non-zero");
         }
     }

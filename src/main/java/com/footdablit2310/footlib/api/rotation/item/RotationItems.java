@@ -2,6 +2,8 @@ package com.footdablit2310.footlib.api.rotation.item;
 
 import com.footdablit2310.footlib.FootLib;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.inventory.MenuType;
+import com.footdablit2310.footlib.api.rotation.menu.RotationMenu;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
@@ -14,10 +16,12 @@ public final class RotationItems {
     public static DeferredHolder<Item, RotationToolItem> DIAMOND;
     public static DeferredHolder<Item, RotationToolItem> NETHERITE;
     public static DeferredHolder<Item, RotationToolItem> ULTRA_NETHERITE;
+    public static DeferredHolder<MenuType<?>, MenuType<RotationMenu>> ROTATION_MENU;
 
     private RotationItems() {}
 
     public static void register() {
+        ROTATION_MENU = FootLib.FER.menu("rotation_editor").factory(RotationMenu::new).register();
         COPPER = register("rotation_tool_copper", 22.5, 1024);
         IRON = register("rotation_tool_iron", 11.25, 2048);
         GOLD = register("rotation_tool_gold", 5.0, 512);

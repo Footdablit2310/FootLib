@@ -29,4 +29,9 @@ public interface RotatableBlockEntity {
     default void loadRotation(CompoundTag tag) {
         footlib$getRotationData().load(tag);
     }
+
+    /** Call from the implementing BlockEntity's tick method. */
+    default boolean tickRotation() {
+        return footlib$getRotationData().tick();
+    }
 }

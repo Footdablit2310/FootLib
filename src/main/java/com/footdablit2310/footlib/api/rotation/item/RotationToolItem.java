@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.joml.Quaterniond;
 
 /**
- * Basic rotation tool: use normally for Y, crouch-use for X.
+ * Rotation tool: clicked face selects the axis; crouching reverses rotation.
  * Rotation requests are applied only on the logical server.
  */
 public class RotationToolItem extends Item {

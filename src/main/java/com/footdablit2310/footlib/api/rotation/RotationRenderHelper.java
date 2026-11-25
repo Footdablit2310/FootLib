@@ -10,26 +10,20 @@ import org.joml.Vector3d;
 public final class RotationRenderHelper {
     private RotationRenderHelper() {}
 
-    /**
-     * Resolves both quaternion and pivot from the BlockEntity's current
-     * BlockState. Call after translating the PoseStack to the block origin.
-     */
+    /** Call after translating the PoseStack to the block origin. */
     public static boolean apply(PoseStack poseStack, BlockEntity blockEntity) {
         var rotation = RotationAPI.getRotation(blockEntity);
         if (rotation.isEmpty()) return false;
         RotationSettings settings = RotationConfigManager.getSettings(blockEntity.getBlockState());
-        Vector3d pivot = settings == null ? new Vector3d(0.5, 0.5, 0.5) : settings.pivot();
+        Vector3d pivot = settings.pivot();
         apply(poseStack, rotation.get(), pivot);
         return true;
     }
 
-    /** Applies a quaternion around a block-local pivot expressed in block units. */
     public static void apply(PoseStack poseStack, Quaterniond rotation, Vector3d pivot) {
         poseStack.translate(pivot.x, pivot.y, pivot.z);
-        poseStack.mulPose(new Quaternionf(
-                (float) rotation.x, (float) rotation.y,
-                (float) rotation.z, (float) rotation.w
-        ));
+        poseStack.mulPose(new Quaternionf((float) rotation.x, (float) rotation.y,
+                (float) rotation.z, (float) rotation.w));
         poseStack.translate(-pivot.x, -pivot.y, -pivot.z);
     }
 }

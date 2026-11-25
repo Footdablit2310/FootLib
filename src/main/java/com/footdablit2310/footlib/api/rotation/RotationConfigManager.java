@@ -70,7 +70,22 @@ public final class RotationConfigManager implements PreparableReloadListener {
                         }
                     }
 
-                    if (loaded.put(blockId, new RotationBlockConfig(defaults, overrides)) != null) {
+                    if (!net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(blockId)) {
+                        throw new IllegalArgumentException("Unknown block registry ID: " + blockId);
+                    }
+                    RotationBlockConfig config = new RotationBlockConfig(defaults, overrides);
+                    var possibleStates = net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                            .get(blockId).getStateDefinition().getPossibleStates();
+                    for (Map<String, String> matcher : overrides.keySet()) {
+                        if (!config.matchesAnyState(possibleStates, matcher)) {
+                            throw new IllegalArgumentException("Blockstate matcher does not match any state of "
+                                    + blockId + ": " + matcher);
+                        }
+                    }
+                    for (BlockState possibleState : possibleStates) {
+                        config.resolve(possibleState); // Also rejects equally-specific ambiguous overrides.
+                    }
+                    if (loaded.put(blockId, config) != null) {
                         throw new IllegalArgumentException("Duplicate rotation config for " + blockId);
                     }
                 } catch (Exception exception) {

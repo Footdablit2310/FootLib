@@ -58,8 +58,12 @@ public final class FootLib {
         NeoForge.EVENT_BUS.post(new FootLibConfigRegisterEvent());
 
     }
-    @SubscribeEvent
     public static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
+        event.registrar("1").playToServer(
+                RotationSubmitPayload.TYPE,
+                RotationSubmitPayload.STREAM_CODEC,
+                RotationSubmitPayload::handle
+        );
     }
     @SubscribeEvent
     public static void registerJsonConfigs(FootLibConfigRegisterEvent event) {

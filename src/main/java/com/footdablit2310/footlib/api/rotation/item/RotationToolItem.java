@@ -39,13 +39,18 @@ public class RotationToolItem extends Item {
             return InteractionResult.PASS;
         }
 
-        boolean rotateX = context.getPlayer() != null && context.getPlayer().isCrouching();
-        String axis = rotateX ? "x" : "y";
+        net.minecraft.core.Direction face = context.getClickedFace();
+        String axis = face.getAxis().getName();
+        boolean reverse = face.getAxisDirection() == net.minecraft.core.Direction.AxisDirection.NEGATIVE;
+        if (context.getPlayer() != null && context.getPlayer().isCrouching()) {
+            reverse = !reverse;
+        }
         if (!config.allowsAxis(axis)) {
             return InteractionResult.FAIL;
         }
 
-        double radians = Math.toRadians(config.rotationStepDegrees());
+        double degrees = reverse ? -config.rotationStepDegrees() : config.rotationStepDegrees();
+        double radians = Math.toRadians(degrees);
         Quaterniond delta = switch (axis) {
             case "x" -> new Quaterniond().rotationX(radians);
             case "y" -> new Quaterniond().rotationY(radians);

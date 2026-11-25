@@ -1,7 +1,6 @@
 package com.footdablit2310.footlib.api.rotation;
 
 import net.minecraft.world.level.block.state.BlockState;
-
 import java.util.Comparator;
 import java.util.Map;
 
@@ -10,8 +9,7 @@ public final class RotationBlockConfig {
     private final RotationSettings defaults;
     private final Map<Map<String, String>, RotationSettingsOverride> blockStates;
 
-    public RotationBlockConfig(RotationSettings defaults,
-            Map<Map<String, String>, RotationSettingsOverride> blockStates) {
+    public RotationBlockConfig(RotationSettings defaults, Map<Map<String, String>, RotationSettingsOverride> blockStates) {
         this.defaults = defaults;
         this.blockStates = Map.copyOf(blockStates);
     }
@@ -19,33 +17,43 @@ public final class RotationBlockConfig {
     public RotationSettings defaults() { return defaults; }
     public Map<Map<String, String>, RotationSettingsOverride> blockStates() { return blockStates; }
 
-    /** Apply matching overrides from least to most specific. */
+    /** Applies matching entries from least to most specific, rejecting equal-specificity matches. */
     public RotationSettings resolve(BlockState state) {
-        RotationSettings resolved = defaults;
-        var matching = blockStates.entrySet().stream()
-                .filter(entry -> matches(state, entry.getKey()))
-                .sorted(Comparator.comparingInt(entry -> specificity(entry.getKey())))
+        var matching = blockStates.entrySet().stream().filter(e -> matches(state, e.getKey()))
+                .sorted(Comparator.comparing(RotationBlockConfig::specificity, RotationBlockConfig::compareSpecificity))
                 .toList();
-
-        int previousSpecificity = -1;
+        RotationSettings resolved = defaults;
+        Specificity previous = null;
         for (var entry : matching) {
-            int specificity = specificity(entry.getKey());
-            if (specificity == previousSpecificity) {
+            Specificity current = specificity(entry.getKey());
+            if (previous != null && compareSpecificity(previous, current) == 0)
                 throw new IllegalStateException("Ambiguous FootLib rotation blockstate overrides for " + state);
-            }
             resolved = entry.getValue().apply(resolved);
-            previousSpecificity = specificity;
+            previous = current;
         }
         return resolved;
     }
 
-    private static int specificity(Map<String, String> matcher) {
-        int score = 0;
+    private record Specificity(int propertyCount, int exactCount, int exclusionCount, int wildcardCount) {}
+
+    private static Specificity specificity(Map<String, String> matcher) {
+        int exact = 0, exclusion = 0, wildcard = 0;
         for (String value : matcher.values()) {
-            if (value.equals("*")) continue;
-            score += value.startsWith("!") ? 1 : 2;
+            if (value.equals("*")) wildcard++;
+            else if (value.startsWith("!")) exclusion++;
+            else exact++;
         }
-        return score;
+        return new Specificity(matcher.size(), exact, exclusion, wildcard);
+    }
+
+    private static int compareSpecificity(Specificity a, Specificity b) {
+        int c = Integer.compare(a.propertyCount, b.propertyCount);
+        if (c != 0) return c;
+        c = Integer.compare(a.exactCount, b.exactCount);
+        if (c != 0) return c;
+        c = Integer.compare(a.exclusionCount, b.exclusionCount);
+        if (c != 0) return c;
+        return Integer.compare(b.wildcardCount, a.wildcardCount);
     }
 
     public boolean matchesAnyState(Iterable<BlockState> states, Map<String, String> matcher) {
@@ -54,16 +62,14 @@ public final class RotationBlockConfig {
     }
 
     private static boolean matches(BlockState state, Map<String, String> matcher) {
-        for (Map.Entry<String, String> expected : matcher.entrySet()) {
+        for (var expected : matcher.entrySet()) {
             String actual = getStateProperty(state, expected.getKey());
             if (actual == null) return false;
             String wanted = expected.getValue();
             if (wanted.equals("*")) continue;
             if (wanted.startsWith("!")) {
                 if (actual.equals(wanted.substring(1))) return false;
-            } else if (!actual.equals(wanted)) {
-                return false;
-            }
+            } else if (!actual.equals(wanted)) return false;
         }
         return true;
     }

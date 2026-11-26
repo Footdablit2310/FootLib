@@ -115,12 +115,6 @@
   </li>
 </ol>
 
-<h2>Blender Assets</h2>
-
-<p>
-  Blender modeling assets are documented separately.<br />
-  See <a href="README_BLENDER.md">README_BLENDER.md</a> for details.
-</p>
 
 Download link: https://modrinth.com/project/18KUjTNM
 

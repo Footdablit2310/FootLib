@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -74,7 +75,7 @@ public class FERBlockBuilder<T extends Block> {
             @NotNull Supplier<? extends List<ItemStack>> inputs,
             @NotNull Supplier<? extends List<ItemStack>> outputs
     ) {
-        jeiRecipes.add(() -> JEIRecipeRegistry.register(recipeType, inputs.get(), outputs.get()));
+        jeiRecipes.add(() -> JEIRecipeRegistry.register(recipeType, inputs, outputs));
         return this;
     }
 

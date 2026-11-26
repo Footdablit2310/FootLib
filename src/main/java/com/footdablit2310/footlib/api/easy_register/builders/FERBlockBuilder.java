@@ -28,7 +28,7 @@ public class FERBlockBuilder<T extends Block> {
     private @Nullable ResourceKey<CreativeModeTab> explicitTab = null;
     private boolean createSimpleItem = false;
     private @Nullable String tabName = null;
-    private final List<JEIRecipeData> jeiRecipes = new ArrayList<>();
+    private final List<Supplier<JEIRecipeData>> jeiRecipes = new ArrayList<>();
 
     public FERBlockBuilder(@NotNull FootEasyRegisterSystem reg, @NotNull String name, @NotNull Supplier<T> factory) {
         this.reg = reg;
@@ -64,7 +64,19 @@ public class FERBlockBuilder<T extends Block> {
             @NotNull List<ItemStack> inputs,
             @NotNull List<ItemStack> outputs
     ) {
-        jeiRecipes.add(new JEIRecipeData(recipeType, inputs, outputs));
+        return jeiRecipe(recipeType, () -> inputs, () -> outputs);
+    }
+
+    /**
+     * Supplier overload for stacks that depend on deferred registry holders.
+     * The suppliers are evaluated during JEI recipe registration, after registries are ready.
+     */
+    public @NotNull FERBlockBuilder<T> jeiRecipe(
+            @NotNull ResourceLocation recipeType,
+            @NotNull Supplier<? extends List<ItemStack>> inputs,
+            @NotNull Supplier<? extends List<ItemStack>> outputs
+    ) {
+        jeiRecipes.add(() -> new JEIRecipeData(recipeType, inputs.get(), outputs.get()));
         return this;
     }
 

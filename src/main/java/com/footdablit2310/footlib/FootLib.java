@@ -52,7 +52,7 @@ public final class FootLib {
             FootLibVisualizeStructureCommand::register
         );
 
-        // Mod integrations
+        // Optional integrations
         CreateCompat.init();
         JEICompat.init();
         NeoForge.EVENT_BUS.post(new FootLibConfigRegisterEvent());

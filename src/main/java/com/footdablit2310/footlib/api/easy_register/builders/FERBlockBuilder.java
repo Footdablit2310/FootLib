@@ -1,7 +1,6 @@
 package com.footdablit2310.footlib.api.easy_register.builders;
 
 import com.footdablit2310.footlib.api.easy_register.FootEasyRegisterSystem;
-import com.footdablit2310.footlib.api.integration.jei.JEIRecipeData;
 import com.footdablit2310.footlib.api.integration.jei.JEIRecipeRegistry;
 
 import net.minecraft.resources.ResourceKey;
@@ -14,7 +13,6 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -28,7 +26,7 @@ public class FERBlockBuilder<T extends Block> {
     private @Nullable ResourceKey<CreativeModeTab> explicitTab = null;
     private boolean createSimpleItem = false;
     private @Nullable String tabName = null;
-    private final List<Supplier<JEIRecipeData>> jeiRecipes = new ArrayList<>();
+    private final List<Runnable> jeiRecipes = new ArrayList<>();
 
     public FERBlockBuilder(@NotNull FootEasyRegisterSystem reg, @NotNull String name, @NotNull Supplier<T> factory) {
         this.reg = reg;
@@ -76,7 +74,7 @@ public class FERBlockBuilder<T extends Block> {
             @NotNull Supplier<? extends List<ItemStack>> inputs,
             @NotNull Supplier<? extends List<ItemStack>> outputs
     ) {
-        jeiRecipes.add(() -> new JEIRecipeData(recipeType, inputs.get(), outputs.get()));
+        jeiRecipes.add(() -> JEIRecipeRegistry.register(recipeType, inputs.get(), outputs.get()));
         return this;
     }
 
@@ -102,7 +100,7 @@ public class FERBlockBuilder<T extends Block> {
             reg.addToTab(tabName, stackSupplier);
         }
 
-        jeiRecipes.forEach(JEIRecipeRegistry::register);
+        jeiRecipes.forEach(Runnable::run);
         return holder;
     }
 }

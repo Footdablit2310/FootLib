@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 /**
  * Central registration point for JEI categories and their recipes.
  *
- * <p>Call these methods during your mod's initialization. The FootLib JEI
+ * <p>Call these methods from client-side mod initialization. The FootLib JEI
  * plugin invokes the queued registrations during JEI's category and recipe
  * registration phases.</p>
  */

@@ -75,3 +75,4 @@ replay_pid*
 *.pyc
 *.pyo
 *.pyd
+/runs/junit/

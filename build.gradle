@@ -103,7 +103,7 @@ configurations {
 dependencies {
     // NeoForge
     implementation "net.neoforged:neoforge:${neo_version}"
-    // JEI API (required mod dependency; compile against the API without bundling it)
+    // JEI API (compile only)
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     // JEI runtime

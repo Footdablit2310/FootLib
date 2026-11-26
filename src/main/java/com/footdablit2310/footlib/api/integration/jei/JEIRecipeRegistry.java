@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public final class JEIRecipeRegistry {
     private static final Map<ResourceLocation, List<JEIRecipeWrapper>> RECIPES = new LinkedHashMap<>();

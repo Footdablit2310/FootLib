@@ -9,11 +9,10 @@ permissions:
 
 jobs:
   build:
-    name: Build FootLib
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Java 21
@@ -25,5 +24,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper
+
       - name: Build
-        run: chmod +x gradlew && ./gradlew build
+        run: bash ./gradlew build

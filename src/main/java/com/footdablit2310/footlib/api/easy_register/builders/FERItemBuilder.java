@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -67,7 +68,7 @@ public class FERItemBuilder<T extends Item> {
             @NotNull Supplier<? extends List<ItemStack>> inputs,
             @NotNull Supplier<? extends List<ItemStack>> outputs
     ) {
-        jeiRecipes.add(() -> JEIRecipeRegistry.register(recipeType, inputs.get(), outputs.get()));
+        jeiRecipes.add(() -> JEIRecipeRegistry.register(recipeType, inputs, outputs));
         return this;
     }
 

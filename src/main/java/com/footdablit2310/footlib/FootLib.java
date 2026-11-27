@@ -22,6 +22,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegistryBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import com.footdablit2310.footlib.api.common.commands.FootLibModListCommand;
@@ -58,7 +59,8 @@ public final class FootLib {
         NeoForge.EVENT_BUS.post(new FootLibConfigRegisterEvent());
 
     }
-    public static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
+    @SubscribeEvent
+    public static void onRegisterPayloads(@NotNull RegisterPayloadHandlersEvent event) {
         event.registrar("1").playToServer(
                 RotationSubmitPayload.TYPE,
                 RotationSubmitPayload.STREAM_CODEC,
@@ -66,7 +68,7 @@ public final class FootLib {
         );
     }
     @SubscribeEvent
-    public static void registerJsonConfigs(FootLibConfigRegisterEvent event) {
+    public static void registerJsonConfigs(@NotNull FootLibConfigRegisterEvent event) {
         event.register(ModJsonConfigs.MAINTENANCE);
     }
 

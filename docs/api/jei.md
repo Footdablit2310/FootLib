@@ -4,7 +4,7 @@ FootLib provides a small JEI recipe-registration bridge for the FootEasyRegister
 
 **This integration registers recipe data only.** Your mod remains responsible for creating its JEI recipe category, category layout, catalysts, and display logic.
 
-JEI is declared as a required client-side dependency by FootLib.
+JEI is declared as a required dependency by FootLib.
 
 ## Recipe type IDs
 

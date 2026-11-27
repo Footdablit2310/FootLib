@@ -69,7 +69,7 @@
 </p>
 
 <p>
-  This is why FootLib does not use SemVer — SemVer cannot express the difference between a major update and an update which breaks all dependencies (overhaul).  <br />
+  This is why FootLib does not use SemVer — SemVer cannot express the difference between a major update and an update which breaks all dependencies (overhaul).  
   FootLib’s versioning makes the reason for incompatibility explicit.
 </p>
 

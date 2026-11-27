@@ -1,8 +1,10 @@
 package com.footdablit2310.footlib.api.easy_register.builders;
 
 import com.footdablit2310.footlib.api.easy_register.FootEasyRegisterSystem;
+import com.footdablit2310.footlib.api.integration.jei.JEIRecipeRegistry;
 
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -11,6 +13,8 @@ import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 public class FERBlockBuilder<T extends Block> {
@@ -23,9 +27,9 @@ public class FERBlockBuilder<T extends Block> {
     private @Nullable ResourceKey<CreativeModeTab> explicitTab = null;
     private boolean createSimpleItem = false;
     private @Nullable String tabName = null;
+    private final List<Runnable> jeiRecipes = new ArrayList<>();
 
-
-	public FERBlockBuilder(@NotNull FootEasyRegisterSystem reg, @NotNull String name, @NotNull Supplier<T> factory) {
+    public FERBlockBuilder(@NotNull FootEasyRegisterSystem reg, @NotNull String name, @NotNull Supplier<T> factory) {
         this.reg = reg;
         this.name = name;
         this.factory = factory;
@@ -46,27 +50,50 @@ public class FERBlockBuilder<T extends Block> {
 
     //SIMPLE ITEM
     public FERBlockBuilder<T> simpleItem() {
-        // Register a BlockItem for this block
         this.createSimpleItem = true;
+        return this;
+    }
+
+    /**
+     * Adds a JEI recipe associated with this block. The recipe type must match
+     * the type used by the mod's own JEI recipe category.
+     */
+    public @NotNull FERBlockBuilder<T> jeiRecipe(
+            @NotNull ResourceLocation recipeType,
+            @NotNull List<ItemStack> inputs,
+            @NotNull List<ItemStack> outputs
+    ) {
+        return jeiRecipe(recipeType, () -> inputs, () -> outputs);
+    }
+
+    /**
+     * Supplier overload for stacks that depend on deferred registry holders.
+     * The suppliers are evaluated during JEI recipe registration, after registries are ready.
+     */
+    public @NotNull FERBlockBuilder<T> jeiRecipe(
+            @NotNull ResourceLocation recipeType,
+            @NotNull Supplier<? extends List<ItemStack>> inputs,
+            @NotNull Supplier<? extends List<ItemStack>> outputs
+    ) {
+        jeiRecipes.add(() -> JEIRecipeRegistry.register(recipeType, inputs, outputs));
         return this;
     }
 
     //REGISTER
     public DeferredHolder<Block, T> register() {
-
         DeferredHolder<Block, T> holder = reg.blocks.register(name, factory);
 
         // --- SIMPLE ITEM ---
         if (createSimpleItem) {
             reg.items.register(name, () ->
-                new BlockItem(holder.get(), new net.minecraft.world.item.Item.Properties())
+                    new BlockItem(holder.get(), new net.minecraft.world.item.Item.Properties())
             );
         }
 
         // --- CREATIVE TAB ---
         if (addToCreativeTab) {
             Supplier<ItemStack> stackSupplier = () ->
-                new ItemStack(createSimpleItem ? holder.get().asItem() : holder.get());
+                    new ItemStack(createSimpleItem ? holder.get().asItem() : holder.get());
 
             if (explicitTab != null) {
                 reg.addToExistingTab(explicitTab, stackSupplier);
@@ -74,8 +101,7 @@ public class FERBlockBuilder<T extends Block> {
             reg.addToTab(tabName, stackSupplier);
         }
 
+        jeiRecipes.forEach(Runnable::run);
         return holder;
     }
-
-
 }

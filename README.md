@@ -115,6 +115,12 @@
   </li>
 </ol>
 
+<h2>API Documentation</h2>
+
+<ul>
+  <li><a href="docs/api/foot_easy_register_system.md">FootEasyRegister System</a> — registration system and builder usage.</li>
+  <li><a href="docs/api/jei.md">JEI Integration</a> — registering recipe inputs and outputs through FER builders.</li>
+</ul>
 
 Download link: https://modrinth.com/project/18KUjTNM
 

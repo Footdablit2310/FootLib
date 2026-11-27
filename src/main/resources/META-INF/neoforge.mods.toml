@@ -32,13 +32,13 @@ versionRange="[6.0.10, 6.1.0)"
 ordering="AFTER"
 side="BOTH"
 
-# JEI(Just Enough Items)
+# JEI (Just Enough Items) - required on the client
 [[dependencies.${mod_id}]]
 modId="jei"
-type="optional"
-versionRange="*"
-ordering="NONE"
-side="BOTH"
+type="required"
+versionRange="[${jei_version},)"
+ordering="AFTER"
+side="CLIENT"
 
 # FootDiscordMC
 [[dependencies.${mod_id}]]

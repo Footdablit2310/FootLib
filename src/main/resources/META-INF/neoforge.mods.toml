@@ -8,14 +8,6 @@ version="${mod_version}"
 displayName="${mod_name}"
 description="Shared API library for Foot mods."
 
-# Required dependency: Minecraft
-[[dependencies.${mod_id}]]
-modId="minecraft"
-mandatory=true
-versionRange="${minecraft_version_range}"
-ordering="NONE"
-side="BOTH"
-
 # Required dependency: NeoForge
 [[dependencies.${mod_id}]]
 modId="neoforge"

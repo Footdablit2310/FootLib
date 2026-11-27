@@ -6,16 +6,17 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 @JeiPlugin
 public final class FootLibJEIPlugin implements IModPlugin {
     @Override
-    public ResourceLocation getPluginUid() {
+    public @NotNull ResourceLocation getPluginUid() {
         return ResourceLocation.fromNamespaceAndPath(FootLib.MOD_ID, "jei_plugin");
     }
 
     @Override
-    public void registerRecipes(IRecipeRegistration registration) {
+    public void registerRecipes(@NotNull IRecipeRegistration registration) {
         JEIRecipeRegistry.getRecipes().forEach((id, recipes) -> {
             RecipeType<JEIRecipeWrapper> type =
                     RecipeType.create(id.getNamespace(), id.getPath(), JEIRecipeWrapper.class);

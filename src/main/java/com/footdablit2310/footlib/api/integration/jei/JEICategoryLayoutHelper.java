@@ -1,7 +1,6 @@
 package com.footdablit2310.footlib.api.integration.jei;
 
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.world.item.ItemStack;
 
@@ -32,9 +31,5 @@ public final class JEICategoryLayoutHelper {
                    .addItemStack(out);
             xOut += 18;
         }
-    }
-
-    public static void applyFocus(IRecipeLayoutBuilder builder, IFocusGroup focuses) {
-        // Optional: focus-aware behavior
     }
 }

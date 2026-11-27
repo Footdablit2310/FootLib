@@ -97,8 +97,9 @@ public class FERBlockBuilder<T extends Block> {
 
             if (explicitTab != null) {
                 reg.addToExistingTab(explicitTab, stackSupplier);
+            } else {
+                reg.addToTab(tabName, stackSupplier);
             }
-            reg.addToTab(tabName, stackSupplier);
         }
 
         jeiRecipes.forEach(Runnable::run);

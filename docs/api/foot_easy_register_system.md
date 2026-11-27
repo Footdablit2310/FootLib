@@ -55,7 +55,7 @@ FER.item("example_item", ExampleItem::new)
     .register();
 ```
 
-For custom tabs, call `addToTab(...)` through the builder before registering the custom tab with `registerCreativeTab(...)`. The custom tab collects entries registered for its name when it is created.
+For custom tabs, register the items with `.creativeTab("example_tab").register()` before creating the tab with `registerCreativeTab(...)`. The custom tab collects entries registered for its name when it is created.
 
 ## Registering blocks
 

@@ -115,93 +115,11 @@
   </li>
 </ol>
 
-<h2>JEI recipe registration (FootEasyRegister)</h2>
-
-<p>
-  FootLib lets item and block builders contribute recipe inputs and outputs to JEI.
-  It registers recipe data only; your mod still creates and registers its own JEI recipe category and layout.
-  JEI is a required client dependency for FootLib.
-</p>
-
-<h3>Recipe type ID</h3>
-
-<p>
-  Pick one <code>ResourceLocation</code> for the recipe type. Use the same namespace and path
-  when creating the category's JEI <code>RecipeType</code>. The category must use
-  <code>JEIRecipeWrapper.class</code>, because that is the recipe class supplied by FootLib.
-</p>
-
-<pre><code>public static final ResourceLocation MACHINE_RECIPE_TYPE =
-    ResourceLocation.fromNamespaceAndPath("examplemod", "machine");
-
-public static final RecipeType&lt;JEIRecipeWrapper&gt; MACHINE_RECIPES =
-    JEICategoryBuilder.type("examplemod:machine", JEIRecipeWrapper.class);
-</code></pre>
-
-<h3>Registering an item recipe</h3>
-
-<pre><code>fer.item("example_item", ExampleItem::new)
-    .jeiRecipe(
-        MACHINE_RECIPE_TYPE,
-        () -&gt; List.of(new ItemStack(Items.IRON_INGOT)),
-        () -&gt; List.of(new ItemStack(Items.IRON_BLOCK))
-    )
-    .register();
-</code></pre>
-
-<h3>Registering a block recipe</h3>
-
-<pre><code>fer.block("example_machine", ExampleMachineBlock::new)
-    .jeiRecipe(
-        MACHINE_RECIPE_TYPE,
-        () -&gt; List.of(new ItemStack(Items.COPPER_INGOT)),
-        () -&gt; List.of(new ItemStack(Items.COPPER_BLOCK))
-    )
-    .simpleItem()
-    .register();
-</code></pre>
-
-<h3>Using direct lists</h3>
-
-<p>
-  If all stacks are already available, pass lists directly instead of suppliers:
-</p>
-
-<pre><code>.jeiRecipe(
-    MACHINE_RECIPE_TYPE,
-    List.of(new ItemStack(Items.IRON_INGOT)),
-    List.of(new ItemStack(Items.IRON_BLOCK))
-)
-</code></pre>
-
-<h3>Why use suppliers?</h3>
-
-<p>
-  The supplier overload delays stack creation until JEI asks FootLib for recipe data.
-  This is useful when stacks refer to items or blocks registered through deferred holders:
-</p>
-
-<pre><code>.jeiRecipe(
-    MACHINE_RECIPE_TYPE,
-    () -&gt; List.of(new ItemStack(MY_INGOT.get())),
-    () -&gt; List.of(new ItemStack(MY_BLOCK_ITEM.get()))
-)
-</code></pre>
-
-<p>
-  Suppliers should return non-null lists containing non-null <code>ItemStack</code> values.
-  FootLib snapshots the lists and copies the stacks when creating the JEI recipe wrappers.
-  Multiple recipes can use the same recipe type ID.
-</p>
-
-<h3>Important integration notes</h3>
+<h2>API Documentation</h2>
 
 <ul>
-  <li>The recipe type ID passed to <code>.jeiRecipe(...)</code> must exactly match the ID used by your category.</li>
-  <li>Your category must use <code>JEIRecipeWrapper.class</code> and read its <code>inputs()</code> and <code>outputs()</code>.</li>
-  <li>FootLib does not create categories, category layouts, catalysts, or recipe logic for your mod.</li>
-  <li>Register the builder normally by calling <code>.register()</code>; this queues its recipe data for JEI.</li>
-  <li>Use the supplier overload when your recipe stacks depend on deferred registry holders.</li>
+  <li><a href="docs/api/foot_easy_register_system.md">FootEasyRegister System</a> — registration system and builder usage.</li>
+  <li><a href="docs/api/jei.md">JEI Integration</a> — registering recipe inputs and outputs through FER builders.</li>
 </ul>
 
 <h2>Blender Assets</h2>
